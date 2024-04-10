@@ -817,6 +817,23 @@ func TestCodec_DecodeTopLevel(t *testing.T) {
 		require.Equal(t, &BigIntValue{Value: big.NewInt(-1)}, destination)
 	})
 
+	t.Run("address", func(t *testing.T) {
+		data, _ := hex.DecodeString("0139472eff6886771a982f3083da5d421f24c29181e63888228dc81ca60d69e1")
+
+		destination := &AddressValue{}
+		err := codec.DecodeTopLevel(data, destination)
+		require.NoError(t, err)
+		require.Equal(t, &AddressValue{Value: data}, destination)
+	})
+
+	t.Run("address (bad)", func(t *testing.T) {
+		data, _ := hex.DecodeString("0139472eff6886771a982f3083da5d42")
+
+		destination := &AddressValue{}
+		err := codec.DecodeTopLevel(data, destination)
+		require.ErrorContains(t, err, "public key (address) has invalid length")
+	})
+
 	t.Run("struct", func(t *testing.T) {
 		data, _ := hex.DecodeString("014142")
 
