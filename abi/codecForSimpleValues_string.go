@@ -15,6 +15,11 @@ func (c *codec) encodeNestedString(writer io.Writer, value StringValue) error {
 	return err
 }
 
+func (c *codec) encodeTopLevelString(writer io.Writer, value StringValue) error {
+	_, err := writer.Write([]byte(value.Value))
+	return err
+}
+
 func (c *codec) decodeNestedString(reader io.Reader, value *StringValue) error {
 	length, err := decodeLength(reader)
 	if err != nil {
@@ -26,6 +31,11 @@ func (c *codec) decodeNestedString(reader io.Reader, value *StringValue) error {
 		return err
 	}
 
+	value.Value = string(data)
+	return nil
+}
+
+func (c *codec) decodeTopLevelString(data []byte, value *StringValue) error {
 	value.Value = string(data)
 	return nil
 }

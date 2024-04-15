@@ -14,6 +14,11 @@ func (c *codec) encodeNestedBytes(writer io.Writer, value BytesValue) error {
 	return err
 }
 
+func (c *codec) encodeTopLevelBytes(writer io.Writer, value BytesValue) error {
+	_, err := writer.Write(value.Value)
+	return err
+}
+
 func (c *codec) decodeNestedBytes(reader io.Reader, value *BytesValue) error {
 	length, err := decodeLength(reader)
 	if err != nil {
@@ -25,6 +30,11 @@ func (c *codec) decodeNestedBytes(reader io.Reader, value *BytesValue) error {
 		return err
 	}
 
+	value.Value = data
+	return nil
+}
+
+func (c *codec) decodeTopLevelBytes(data []byte, value *BytesValue) error {
 	value.Value = data
 	return nil
 }

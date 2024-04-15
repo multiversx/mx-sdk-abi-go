@@ -116,6 +116,10 @@ func (c *codec) doEncodeTopLevel(writer io.Writer, value any) error {
 		return c.encodeTopLevelBigNumber(writer, value.Value)
 	case AddressValue:
 		return c.encodeTopLevelAddress(writer, value)
+	case StringValue:
+		return c.encodeTopLevelString(writer, value)
+	case BytesValue:
+		return c.encodeTopLevelBytes(writer, value)
 	case StructValue:
 		return c.encodeTopLevelStruct(writer, value)
 	case EnumValue:
@@ -259,6 +263,10 @@ func (c *codec) doDecodeTopLevel(data []byte, value any) error {
 		value.Value = n
 	case *AddressValue:
 		return c.decodeTopLevelAddress(data, value)
+	case *StringValue:
+		return c.decodeTopLevelString(data, value)
+	case *BytesValue:
+		return c.decodeTopLevelBytes(data, value)
 	case *StructValue:
 		return c.decodeTopLevelStruct(data, value)
 	case *EnumValue:
