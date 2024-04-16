@@ -92,8 +92,58 @@ func TestCodec_Numerical(t *testing.T) {
 	})
 
 	t.Run("should decode nested", func(t *testing.T) {
+		testDecodeNested(t, codec, "00", &U8Value{}, &U8Value{Value: 0})
+		testDecodeNested(t, codec, "01", &U8Value{}, &U8Value{Value: 1})
+		testDecodeNested(t, codec, "ff", &U8Value{}, &U8Value{Value: 255})
+
+		testDecodeNested(t, codec, "ff", &I8Value{}, &I8Value{Value: -1})
+
+		testDecodeNested(t, codec, "4142", &U16Value{}, &U16Value{Value: 0x4142})
+		testDecodeNested(t, codec, "ffff", &U16Value{}, &U16Value{Value: 65535})
+
+		testDecodeNested(t, codec, "ffff", &I16Value{}, &I16Value{Value: -1})
+		testDecodeNested(t, codec, "8000", &I16Value{}, &I16Value{Value: -32768})
+
+		testDecodeNested(t, codec, "41424344", &U32Value{}, &U32Value{Value: 0x41424344})
+		testDecodeNested(t, codec, "ffffffff", &U32Value{}, &U32Value{Value: 4294967295})
+
+		testDecodeNested(t, codec, "ffffffff", &I32Value{}, &I32Value{Value: -1})
+		testDecodeNested(t, codec, "80000000", &I32Value{}, &I32Value{Value: -2147483648})
+
+		testDecodeNested(t, codec, "4142434445464748", &U64Value{}, &U64Value{Value: 0x4142434445464748})
+		testDecodeNested(t, codec, "ffffffffffffffff", &U64Value{}, &U64Value{Value: 18446744073709551615})
+
+		testDecodeNested(t, codec, "ffffffffffffffff", &I64Value{}, &I64Value{Value: -1})
+		testDecodeNested(t, codec, "8000000000000000", &I64Value{}, &I64Value{Value: -9223372036854775808})
+
+		testDecodeNested(t, codec, "00000000", &BigIntValue{}, &BigIntValue{Value: big.NewInt(0)})
+		testDecodeNested(t, codec, "0000000101", &BigIntValue{}, &BigIntValue{Value: big.NewInt(1)})
+		testDecodeNested(t, codec, "00000001ff", &BigIntValue{}, &BigIntValue{Value: big.NewInt(-1)})
 	})
 
 	t.Run("should decode top-level", func(t *testing.T) {
+		testDecodeTopLevel(t, codec, "", &U8Value{}, &U8Value{Value: 0})
+		testDecodeNested(t, codec, "01", &U8Value{}, &U8Value{Value: 1})
+
+		testDecodeTopLevel(t, codec, "ff", &I8Value{}, &I8Value{Value: -1})
+		testDecodeTopLevel(t, codec, "80", &I8Value{}, &I8Value{Value: -128})
+
+		testDecodeTopLevel(t, codec, "4242", &U16Value{}, &U16Value{Value: 0x4242})
+		testDecodeTopLevel(t, codec, "ffff", &U16Value{}, &U16Value{Value: 65535})
+
+		testDecodeTopLevel(t, codec, "ffff", &I16Value{}, &I16Value{Value: -1})
+		testDecodeTopLevel(t, codec, "8000", &I16Value{}, &I16Value{Value: -32768})
+
+		testDecodeTopLevel(t, codec, "41424344", &U32Value{}, &U32Value{Value: 0x41424344})
+		testDecodeTopLevel(t, codec, "ffffffff", &U32Value{}, &U32Value{Value: 4294967295})
+
+		testDecodeTopLevel(t, codec, "ffffffff", &I32Value{}, &I32Value{Value: -1})
+		testDecodeTopLevel(t, codec, "80000000", &I32Value{}, &I32Value{Value: -2147483648})
+
+		testDecodeTopLevel(t, codec, "4142434445464748", &U64Value{}, &U64Value{Value: 0x4142434445464748})
+		testDecodeTopLevel(t, codec, "ffffffffffffffff", &U64Value{}, &U64Value{Value: 18446744073709551615})
+
+		testDecodeTopLevel(t, codec, "ffffffffffffffff", &I64Value{}, &I64Value{Value: -1})
+		testDecodeTopLevel(t, codec, "8000000000000000", &I64Value{}, &I64Value{Value: -9223372036854775808})
 	})
 }
