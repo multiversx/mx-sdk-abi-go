@@ -38,73 +38,6 @@ func TestCodec_EncodeNested(t *testing.T) {
 		require.Equal(t, expected, hex.EncodeToString(encoded))
 	}
 
-	t.Run("bool", func(t *testing.T) {
-		doTest(t, BoolValue{Value: false}, "00")
-		doTest(t, BoolValue{Value: true}, "01")
-	})
-
-	t.Run("u8, i8", func(t *testing.T) {
-		doTest(t, U8Value{Value: 0x00}, "00")
-		doTest(t, U8Value{Value: 0x01}, "01")
-		doTest(t, U8Value{Value: 0x42}, "42")
-		doTest(t, U8Value{Value: 0xff}, "ff")
-
-		doTest(t, I8Value{Value: 0x00}, "00")
-		doTest(t, I8Value{Value: 0x01}, "01")
-		doTest(t, I8Value{Value: -1}, "ff")
-		doTest(t, I8Value{Value: -128}, "80")
-		doTest(t, I8Value{Value: 127}, "7f")
-	})
-
-	t.Run("u16, i16", func(t *testing.T) {
-		doTest(t, U16Value{Value: 0x00}, "0000")
-		doTest(t, U16Value{Value: 0x11}, "0011")
-		doTest(t, U16Value{Value: 0x1234}, "1234")
-		doTest(t, U16Value{Value: 0xffff}, "ffff")
-
-		doTest(t, I16Value{Value: 0x0000}, "0000")
-		doTest(t, I16Value{Value: 0x0011}, "0011")
-		doTest(t, I16Value{Value: -1}, "ffff")
-		doTest(t, I16Value{Value: -32768}, "8000")
-	})
-
-	t.Run("u32, i32", func(t *testing.T) {
-		doTest(t, U32Value{Value: 0x00000000}, "00000000")
-		doTest(t, U32Value{Value: 0x00000011}, "00000011")
-		doTest(t, U32Value{Value: 0x00001122}, "00001122")
-		doTest(t, U32Value{Value: 0x00112233}, "00112233")
-		doTest(t, U32Value{Value: 0x11223344}, "11223344")
-		doTest(t, U32Value{Value: 0xffffffff}, "ffffffff")
-
-		doTest(t, I32Value{Value: 0x00000000}, "00000000")
-		doTest(t, I32Value{Value: 0x00000011}, "00000011")
-		doTest(t, I32Value{Value: -1}, "ffffffff")
-		doTest(t, I32Value{Value: -2147483648}, "80000000")
-	})
-
-	t.Run("u64, i64", func(t *testing.T) {
-		doTest(t, U64Value{Value: 0x0000000000000000}, "0000000000000000")
-		doTest(t, U64Value{Value: 0x0000000000000011}, "0000000000000011")
-		doTest(t, U64Value{Value: 0x0000000000001122}, "0000000000001122")
-		doTest(t, U64Value{Value: 0x0000000000112233}, "0000000000112233")
-		doTest(t, U64Value{Value: 0x0000000011223344}, "0000000011223344")
-		doTest(t, U64Value{Value: 0x0000001122334455}, "0000001122334455")
-		doTest(t, U64Value{Value: 0x0000112233445566}, "0000112233445566")
-		doTest(t, U64Value{Value: 0x0011223344556677}, "0011223344556677")
-		doTest(t, U64Value{Value: 0x1122334455667788}, "1122334455667788")
-		doTest(t, U64Value{Value: 0xffffffffffffffff}, "ffffffffffffffff")
-
-		doTest(t, I64Value{Value: 0x0000000000000000}, "0000000000000000")
-		doTest(t, I64Value{Value: 0x0000000000000011}, "0000000000000011")
-		doTest(t, I64Value{Value: -1}, "ffffffffffffffff")
-	})
-
-	t.Run("bigInt", func(t *testing.T) {
-		doTest(t, BigIntValue{Value: big.NewInt(0)}, "00000000")
-		doTest(t, BigIntValue{Value: big.NewInt(1)}, "0000000101")
-		doTest(t, BigIntValue{Value: big.NewInt(-1)}, "00000001ff")
-	})
-
 	t.Run("address", func(t *testing.T) {
 		data, _ := hex.DecodeString("0139472eff6886771a982f3083da5d421f24c29181e63888228dc81ca60d69e1")
 		doTest(t, AddressValue{Value: data}, "0139472eff6886771a982f3083da5d421f24c29181e63888228dc81ca60d69e1")
@@ -114,16 +47,6 @@ func TestCodec_EncodeNested(t *testing.T) {
 		data, _ := hex.DecodeString("0139472eff6886771a982f3083da5d42")
 		_, err := codec.EncodeNested(AddressValue{Value: data})
 		require.ErrorContains(t, err, "public key (address) has invalid length")
-	})
-
-	t.Run("string", func(t *testing.T) {
-		doTest(t, StringValue{Value: ""}, "00000000")
-		doTest(t, StringValue{Value: "abc"}, "00000003616263")
-	})
-
-	t.Run("bytes", func(t *testing.T) {
-		doTest(t, BytesValue{Value: []byte{}}, "00000000")
-		doTest(t, BytesValue{Value: []byte{'a', 'b', 'c'}}, "00000003616263")
 	})
 
 	t.Run("struct", func(t *testing.T) {
@@ -223,50 +146,6 @@ func TestCodec_EncodeTopLevel(t *testing.T) {
 		require.Equal(t, expected, hex.EncodeToString(encoded))
 	}
 
-	t.Run("bool", func(t *testing.T) {
-		doTest(t, BoolValue{Value: false}, "")
-		doTest(t, BoolValue{Value: true}, "01")
-	})
-
-	t.Run("u8, i8", func(t *testing.T) {
-		doTest(t, U8Value{Value: 0x00}, "")
-		doTest(t, U8Value{Value: 0x01}, "01")
-
-		doTest(t, I8Value{Value: 0x00}, "")
-		doTest(t, I8Value{Value: 0x01}, "01")
-		doTest(t, I8Value{Value: -1}, "ff")
-	})
-
-	t.Run("u16, i16", func(t *testing.T) {
-		doTest(t, U16Value{Value: 0x0042}, "42")
-
-		doTest(t, I16Value{Value: 0x0000}, "")
-		doTest(t, I16Value{Value: 0x0011}, "11")
-		doTest(t, I16Value{Value: -1}, "ff")
-	})
-
-	t.Run("u32, i32", func(t *testing.T) {
-		doTest(t, U32Value{Value: 0x00004242}, "4242")
-
-		doTest(t, I32Value{Value: 0x00000000}, "")
-		doTest(t, I32Value{Value: 0x00000011}, "11")
-		doTest(t, I32Value{Value: -1}, "ff")
-	})
-
-	t.Run("u64, i64", func(t *testing.T) {
-		doTest(t, U64Value{Value: 0x0042434445464748}, "42434445464748")
-
-		doTest(t, I64Value{Value: 0x0000000000000000}, "")
-		doTest(t, I64Value{Value: 0x0000000000000011}, "11")
-		doTest(t, I64Value{Value: -1}, "ff")
-	})
-
-	t.Run("bigInt", func(t *testing.T) {
-		doTest(t, BigIntValue{Value: big.NewInt(0)}, "")
-		doTest(t, BigIntValue{Value: big.NewInt(1)}, "01")
-		doTest(t, BigIntValue{Value: big.NewInt(-1)}, "ff")
-	})
-
 	t.Run("address", func(t *testing.T) {
 		data, _ := hex.DecodeString("0139472eff6886771a982f3083da5d421f24c29181e63888228dc81ca60d69e1")
 		doTest(t, AddressValue{Value: data}, "0139472eff6886771a982f3083da5d421f24c29181e63888228dc81ca60d69e1")
@@ -339,24 +218,6 @@ func TestCodec_EncodeTopLevel(t *testing.T) {
 func TestCodec_DecodeNested(t *testing.T) {
 	codec, _ := newCodec(argsNewCodec{
 		pubKeyLength: 32,
-	})
-
-	t.Run("bool (true)", func(t *testing.T) {
-		data, _ := hex.DecodeString("01")
-		destination := &BoolValue{}
-
-		err := codec.DecodeNested(data, destination)
-		require.NoError(t, err)
-		require.Equal(t, &BoolValue{Value: true}, destination)
-	})
-
-	t.Run("bool (false)", func(t *testing.T) {
-		data, _ := hex.DecodeString("00")
-		destination := &BoolValue{}
-
-		err := codec.DecodeNested(data, destination)
-		require.NoError(t, err)
-		require.Equal(t, &BoolValue{Value: false}, destination)
 	})
 
 	t.Run("u8", func(t *testing.T) {
@@ -499,34 +360,6 @@ func TestCodec_DecodeNested(t *testing.T) {
 		require.ErrorContains(t, err, "cannot read exactly 32 bytes")
 	})
 
-	t.Run("string", func(t *testing.T) {
-		data, _ := hex.DecodeString("00000000")
-		destination := &StringValue{}
-		err := codec.DecodeNested(data, destination)
-		require.NoError(t, err)
-		require.Equal(t, &StringValue{}, destination)
-
-		data, _ = hex.DecodeString("00000003616263")
-		destination = &StringValue{}
-		err = codec.DecodeNested(data, destination)
-		require.NoError(t, err)
-		require.Equal(t, &StringValue{Value: "abc"}, destination)
-	})
-
-	t.Run("bytes", func(t *testing.T) {
-		data, _ := hex.DecodeString("00000000")
-		destination := &BytesValue{}
-		err := codec.DecodeNested(data, destination)
-		require.NoError(t, err)
-		require.Equal(t, &BytesValue{Value: []byte{}}, destination)
-
-		data, _ = hex.DecodeString("00000003616263")
-		destination = &BytesValue{}
-		err = codec.DecodeNested(data, destination)
-		require.NoError(t, err)
-		require.Equal(t, &BytesValue{Value: []byte{'a', 'b', 'c'}}, destination)
-	})
-
 	t.Run("struct", func(t *testing.T) {
 		data, _ := hex.DecodeString("014142")
 
@@ -665,24 +498,6 @@ func TestCodec_DecodeNested(t *testing.T) {
 func TestCodec_DecodeTopLevel(t *testing.T) {
 	codec, _ := newCodec(argsNewCodec{
 		pubKeyLength: 32,
-	})
-
-	t.Run("bool (true)", func(t *testing.T) {
-		data, _ := hex.DecodeString("01")
-		destination := &BoolValue{}
-
-		err := codec.DecodeTopLevel(data, destination)
-		require.NoError(t, err)
-		require.Equal(t, &BoolValue{Value: true}, destination)
-	})
-
-	t.Run("bool (false)", func(t *testing.T) {
-		data, _ := hex.DecodeString("")
-		destination := &BoolValue{}
-
-		err := codec.DecodeTopLevel(data, destination)
-		require.NoError(t, err)
-		require.Equal(t, &BoolValue{Value: false}, destination)
 	})
 
 	t.Run("u8", func(t *testing.T) {
@@ -921,4 +736,34 @@ func TestCodec_DecodeTopLevel(t *testing.T) {
 		err := codec.DecodeTopLevel([]byte{0x00}, &dummy{foobar: "hello"})
 		require.ErrorContains(t, err, "unsupported type for top-level decoding: *abi.dummy")
 	})
+}
+
+func testEncodeNested(t *testing.T, codec *codec, value any, expected string) {
+	encoded, err := codec.EncodeNested(value)
+
+	require.NoError(t, err)
+	require.Equal(t, expected, hex.EncodeToString(encoded))
+}
+
+func testEncodeTopLevel(t *testing.T, codec *codec, value any, expected string) {
+	encoded, err := codec.EncodeTopLevel(value)
+
+	require.NoError(t, err)
+	require.Equal(t, expected, hex.EncodeToString(encoded))
+}
+
+func testDecodeNested(t *testing.T, codec *codec, encodedData string, destination any, expected any) {
+	data, _ := hex.DecodeString(encodedData)
+	err := codec.DecodeNested(data, destination)
+
+	require.NoError(t, err)
+	require.Equal(t, expected, destination)
+}
+
+func testDecodeTopLevel(t *testing.T, codec *codec, encodedData string, destination any, expected any) {
+	data, _ := hex.DecodeString(encodedData)
+	err := codec.DecodeTopLevel(data, destination)
+
+	require.NoError(t, err)
+	require.Equal(t, expected, destination)
 }
