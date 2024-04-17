@@ -42,7 +42,12 @@ type I64Value struct {
 	Value int64
 }
 
-// BigIntValue is a wrapper for a big integer
+// BigIntValue is a wrapper for a big integer (unsigned)
+type BigUIntValue struct {
+	Value *big.Int
+}
+
+// BigIntValue is a wrapper for a big integer (signed)
 type BigIntValue struct {
 	Value *big.Int
 }

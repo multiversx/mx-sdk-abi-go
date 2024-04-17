@@ -60,8 +60,10 @@ func (c *codec) doEncodeNested(writer io.Writer, value any) error {
 		return c.encodeNestedNumber(writer, value.Value, 4)
 	case I64Value:
 		return c.encodeNestedNumber(writer, value.Value, 8)
+	case BigUIntValue:
+		return c.encodeNestedBigNumber(writer, value.Value, false)
 	case BigIntValue:
-		return c.encodeNestedBigNumber(writer, value.Value)
+		return c.encodeNestedBigNumber(writer, value.Value, true)
 	case AddressValue:
 		return c.encodeNestedAddress(writer, value)
 	case StringValue:
@@ -112,8 +114,10 @@ func (c *codec) doEncodeTopLevel(writer io.Writer, value any) error {
 		return c.encodeTopLevelSignedNumber(writer, int64(value.Value))
 	case I64Value:
 		return c.encodeTopLevelSignedNumber(writer, value.Value)
+	case BigUIntValue:
+		return c.encodeTopLevelBigNumber(writer, value.Value, false)
 	case BigIntValue:
-		return c.encodeTopLevelBigNumber(writer, value.Value)
+		return c.encodeTopLevelBigNumber(writer, value.Value, true)
 	case AddressValue:
 		return c.encodeTopLevelAddress(writer, value)
 	case StringValue:
@@ -160,8 +164,16 @@ func (c *codec) doDecodeNested(reader io.Reader, value any) error {
 		return c.decodeNestedNumber(reader, &value.Value, 4)
 	case *I64Value:
 		return c.decodeNestedNumber(reader, &value.Value, 8)
+	case *BigUIntValue:
+		n, err := c.decodeNestedBigNumber(reader, false)
+		if err != nil {
+			return err
+		}
+
+		value.Value = n
+		return nil
 	case *BigIntValue:
-		n, err := c.decodeNestedBigNumber(reader)
+		n, err := c.decodeNestedBigNumber(reader, true)
 		if err != nil {
 			return err
 		}
@@ -258,8 +270,11 @@ func (c *codec) doDecodeTopLevel(data []byte, value any) error {
 		}
 
 		value.Value = int64(n)
+	case *BigUIntValue:
+		n := c.decodeTopLevelBigNumber(data, false)
+		value.Value = n
 	case *BigIntValue:
-		n := c.decodeTopLevelBigNumber(data)
+		n := c.decodeTopLevelBigNumber(data, true)
 		value.Value = n
 	case *AddressValue:
 		return c.decodeTopLevelAddress(data, value)
