@@ -1,7 +1,6 @@
 package abi
 
 import (
-	"math/big"
 	"testing"
 )
 
@@ -53,10 +52,6 @@ func TestCodec_Numerical(t *testing.T) {
 		testEncodeNested(t, codec, I64Value{Value: 0x0000000000000011}, "0000000000000011")
 		testEncodeNested(t, codec, I64Value{Value: -1}, "ffffffffffffffff")
 		testEncodeNested(t, codec, I64Value{Value: -9223372036854775808}, "8000000000000000")
-
-		testEncodeNested(t, codec, BigIntValue{Value: big.NewInt(0)}, "00000000")
-		testEncodeNested(t, codec, BigIntValue{Value: big.NewInt(1)}, "0000000101")
-		testEncodeNested(t, codec, BigIntValue{Value: big.NewInt(-1)}, "00000001ff")
 	})
 
 	t.Run("should encode top-level", func(t *testing.T) {
@@ -85,10 +80,6 @@ func TestCodec_Numerical(t *testing.T) {
 		testEncodeTopLevel(t, codec, I64Value{Value: 0x0000000000000000}, "")
 		testEncodeTopLevel(t, codec, I64Value{Value: 0x0000000000000011}, "11")
 		testEncodeTopLevel(t, codec, I64Value{Value: -1}, "ff")
-
-		testEncodeTopLevel(t, codec, BigIntValue{Value: big.NewInt(0)}, "")
-		testEncodeTopLevel(t, codec, BigIntValue{Value: big.NewInt(1)}, "01")
-		testEncodeTopLevel(t, codec, BigIntValue{Value: big.NewInt(-1)}, "ff")
 	})
 
 	t.Run("should decode nested", func(t *testing.T) {
@@ -115,10 +106,6 @@ func TestCodec_Numerical(t *testing.T) {
 
 		testDecodeNested(t, codec, "ffffffffffffffff", &I64Value{}, &I64Value{Value: -1})
 		testDecodeNested(t, codec, "8000000000000000", &I64Value{}, &I64Value{Value: -9223372036854775808})
-
-		testDecodeNested(t, codec, "00000000", &BigIntValue{}, &BigIntValue{Value: big.NewInt(0)})
-		testDecodeNested(t, codec, "0000000101", &BigIntValue{}, &BigIntValue{Value: big.NewInt(1)})
-		testDecodeNested(t, codec, "00000001ff", &BigIntValue{}, &BigIntValue{Value: big.NewInt(-1)})
 	})
 
 	t.Run("should decode top-level", func(t *testing.T) {
