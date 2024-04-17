@@ -104,24 +104,3 @@ type OutputListValue struct {
 	Items       []any
 	ItemCreator func() any
 }
-
-// InputMultiValue is a multi-value (used for encoding)
-type InputMultiValue struct {
-	Items []any
-}
-
-// OutputMultiValue is a multi-value (used for decoding)
-type OutputMultiValue struct {
-	Items []any
-}
-
-// InputVariadicValues holds variadic values (used for encoding)
-type InputVariadicValues struct {
-	Items []any
-}
-
-// OutputVariadicValues holds variadic values (used for decoding)
-type OutputVariadicValues struct {
-	Items       []any
-	ItemCreator func() any
-}

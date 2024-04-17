@@ -68,6 +68,15 @@ func (s *serializer) doSerialize(partsHolder *partsHolder, inputValues []any) er
 		}
 
 		switch value := value.(type) {
+		case InputOptionalValue:
+			if i != len(inputValues)-1 {
+				// Usage of multiple optional values is not recommended:
+				// https://docs.multiversx.com/developers/data/multi-values
+				// Thus, here, we disallow them.
+				return errors.New("an optional value must be last among input values")
+			}
+
+			err = s.serializeInputOptionalValue(partsHolder, value)
 		case InputMultiValue:
 			err = s.serializeInputMultiValue(partsHolder, value)
 		case InputVariadicValues:
@@ -119,6 +128,15 @@ func (s *serializer) doDeserialize(partsHolder *partsHolder, outputValues []any)
 		}
 
 		switch value := value.(type) {
+		case *OutputOptionalValue:
+			if i != len(outputValues)-1 {
+				// Usage of multiple optional values is not recommended:
+				// https://docs.multiversx.com/developers/data/multi-values
+				// Thus, here, we disallow them.
+				return errors.New("an optional value must be last among output values")
+			}
+
+			err = s.deserializeOutputOptionalValue(partsHolder, value)
 		case *OutputMultiValue:
 			err = s.deserializeOutputMultiValue(partsHolder, value)
 		case *OutputVariadicValues:
@@ -137,6 +155,14 @@ func (s *serializer) doDeserialize(partsHolder *partsHolder, outputValues []any)
 	}
 
 	return nil
+}
+
+func (s *serializer) serializeInputOptionalValue(partsHolder *partsHolder, value InputOptionalValue) error {
+	if value.Value == nil {
+		return nil
+	}
+
+	return s.doSerialize(partsHolder, []any{value.Value})
 }
 
 func (s *serializer) serializeInputMultiValue(partsHolder *partsHolder, value InputMultiValue) error {
@@ -168,6 +194,20 @@ func (s *serializer) serializeDirectlyEncodableValue(partsHolder *partsHolder, v
 	}
 
 	return partsHolder.appendToLastPart(data)
+}
+
+func (s *serializer) deserializeOutputOptionalValue(partsHolder *partsHolder, value *OutputOptionalValue) error {
+	for partsHolder.isFocusedBeyondLastPart() {
+		return nil
+	}
+
+	err := s.doDeserialize(partsHolder, []any{value.Value})
+	if err != nil {
+		return err
+	}
+
+	value.HasValue = true
+	return nil
 }
 
 func (s *serializer) deserializeOutputMultiValue(partsHolder *partsHolder, value *OutputMultiValue) error {
