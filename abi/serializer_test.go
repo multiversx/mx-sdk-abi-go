@@ -41,6 +41,35 @@ func TestSerializer_Serialize(t *testing.T) {
 		require.Equal(t, "42@4243", data)
 	})
 
+	t.Run("optional (missing)", func(t *testing.T) {
+		data, err := serializer.Serialize([]any{
+			U8Value{Value: 0x42},
+			InputOptionalValue{},
+		})
+
+		require.NoError(t, err)
+		require.Equal(t, "42", data)
+	})
+
+	t.Run("optional (provided)", func(t *testing.T) {
+		data, err := serializer.Serialize([]any{
+			U8Value{Value: 0x42},
+			InputOptionalValue{Value: U8Value{Value: 0x43}},
+		})
+
+		require.NoError(t, err)
+		require.Equal(t, "42@43", data)
+	})
+
+	t.Run("optional: should err because optional must be last", func(t *testing.T) {
+		_, err := serializer.Serialize([]any{
+			InputOptionalValue{Value: 0x42},
+			U8Value{Value: 0x43},
+		})
+
+		require.ErrorContains(t, err, "an optional value must be last among input values")
+	})
+
 	t.Run("multi<u8, u16, u32>", func(t *testing.T) {
 		data, err := serializer.Serialize([]any{
 			InputMultiValue{
@@ -194,6 +223,46 @@ func TestSerializer_Deserialize(t *testing.T) {
 			&U8Value{Value: 0x42},
 			&U16Value{Value: 0x4243},
 		}, outputValues)
+	})
+
+	t.Run("optional (missing)", func(t *testing.T) {
+		outputValues := []any{
+			&U8Value{},
+			&OutputOptionalValue{},
+		}
+
+		err := serializer.Deserialize("42", outputValues)
+
+		require.Nil(t, err)
+		require.Equal(t, []any{
+			&U8Value{Value: 0x42},
+			&OutputOptionalValue{HasValue: false},
+		}, outputValues)
+	})
+
+	t.Run("optional (provided)", func(t *testing.T) {
+		outputValues := []any{
+			&U8Value{},
+			&OutputOptionalValue{Value: &U8Value{}},
+		}
+
+		err := serializer.Deserialize("42@43", outputValues)
+
+		require.Nil(t, err)
+		require.Equal(t, []any{
+			&U8Value{Value: 0x42},
+			&OutputOptionalValue{Value: &U8Value{Value: 0x43}, HasValue: true},
+		}, outputValues)
+	})
+
+	t.Run("optional: should err because optional must be last", func(t *testing.T) {
+		outputValues := []any{
+			&OutputOptionalValue{Value: &U8Value{}},
+			&U8Value{},
+		}
+
+		err := serializer.Deserialize("43@42", outputValues)
+		require.ErrorContains(t, err, "an optional value must be last among output values")
 	})
 
 	t.Run("multi<u8, u16, u32>", func(t *testing.T) {
