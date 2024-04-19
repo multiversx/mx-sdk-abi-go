@@ -130,6 +130,8 @@ func (c *codec) doEncodeTopLevel(writer io.Writer, value any) error {
 		return c.encodeTopLevelEnum(writer, value)
 	case OptionValue:
 		return c.encodeTopLevelOption(writer, value)
+	case InputListValue:
+		return c.encodeTopLevelList(writer, value)
 	default:
 		return fmt.Errorf("unsupported type for top-level encoding: %T", value)
 	}
@@ -290,6 +292,8 @@ func (c *codec) doDecodeTopLevel(data []byte, value any) error {
 		return c.decodeTopLevelEnum(data, value)
 	case *OptionValue:
 		return c.decodeTopLevelOption(data, value)
+	case *OutputListValue:
+		return c.decodeTopLevelList(data, value)
 	default:
 		return fmt.Errorf("unsupported type for top-level decoding: %T", value)
 	}
