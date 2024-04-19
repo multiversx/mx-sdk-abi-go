@@ -31,6 +31,19 @@ func (c *codec) encodeNestedNumber(writer io.Writer, value any, numBytes int) er
 	return nil
 }
 
+func (c *codec) encodeTopLevelUnsignedNumber(writer io.Writer, value uint64) error {
+	b := big.NewInt(0).SetUint64(value)
+	data := b.Bytes()
+	_, err := writer.Write(data)
+	return err
+}
+
+func (c *codec) encodeTopLevelSignedNumber(writer io.Writer, value int64) error {
+	data := twos.ToBytes(big.NewInt(value))
+	_, err := writer.Write(data)
+	return err
+}
+
 func (c *codec) decodeNestedNumber(reader io.Reader, value any, numBytes int) error {
 	data, err := readBytesExactly(reader, numBytes)
 	if err != nil {
@@ -44,19 +57,6 @@ func (c *codec) decodeNestedNumber(reader io.Reader, value any, numBytes int) er
 	}
 
 	return nil
-}
-
-func (c *codec) encodeTopLevelUnsignedNumber(writer io.Writer, value uint64) error {
-	b := big.NewInt(0).SetUint64(value)
-	data := b.Bytes()
-	_, err := writer.Write(data)
-	return err
-}
-
-func (c *codec) encodeTopLevelSignedNumber(writer io.Writer, value int64) error {
-	data := twos.ToBytes(big.NewInt(value))
-	_, err := writer.Write(data)
-	return err
 }
 
 func (c *codec) decodeTopLevelUnsignedNumber(data []byte, maxValue uint64) (uint64, error) {

@@ -15,6 +15,16 @@ func (c *codec) encodeNestedBool(writer io.Writer, value BoolValue) error {
 	return err
 }
 
+func (c *codec) encodeTopLevelBool(writer io.Writer, value BoolValue) error {
+	if !value.Value {
+		// For "false", write nothing.
+		return nil
+	}
+
+	_, err := writer.Write([]byte{trueAsByte})
+	return err
+}
+
 func (c *codec) decodeNestedBool(reader io.Reader, value *BoolValue) error {
 	data, err := readBytesExactly(reader, 1)
 	if err != nil {
@@ -27,16 +37,6 @@ func (c *codec) decodeNestedBool(reader io.Reader, value *BoolValue) error {
 	}
 
 	return nil
-}
-
-func (c *codec) encodeTopLevelBool(writer io.Writer, value BoolValue) error {
-	if !value.Value {
-		// For "false", write nothing.
-		return nil
-	}
-
-	_, err := writer.Write([]byte{trueAsByte})
-	return err
 }
 
 func (c *codec) decodeTopLevelBool(data []byte, value *BoolValue) error {
