@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewCodec(t *testing.T) {
-	t.Run("should work", func(t *testing.T) {
+func TestCodec(t *testing.T) {
+	t.Run("should create new codec", func(t *testing.T) {
 		codec, err := newCodec(argsNewCodec{
 			pubKeyLength: 32,
 		})
@@ -17,77 +17,40 @@ func TestNewCodec(t *testing.T) {
 		require.NotNil(t, codec)
 	})
 
-	t.Run("should err if bad public key length", func(t *testing.T) {
+	t.Run("should err on creating new codec when public key length is bad", func(t *testing.T) {
 		_, err := newCodec(argsNewCodec{
 			pubKeyLength: 0,
 		})
 
 		require.ErrorContains(t, err, "bad public key length")
 	})
-}
 
-func TestCodec_EncodeNested(t *testing.T) {
-	codec, _ := newCodec(argsNewCodec{
-		pubKeyLength: 32,
-	})
+	t.Run("should err when encoding or decoding an unknown type", func(t *testing.T) {
+		codec, _ := newCodec(argsNewCodec{
+			pubKeyLength: 32,
+		})
 
-	t.Run("should err when unknown type", func(t *testing.T) {
-		type dummy struct {
+		type dummyType struct {
 			foobar string
 		}
 
-		encoded, err := codec.EncodeNested(&dummy{foobar: "hello"})
+		encoded, err := codec.EncodeNested(&dummyType{foobar: "hello"})
 		require.ErrorContains(t, err, "unsupported type for nested encoding: *abi.dummy")
 		require.Nil(t, encoded)
-	})
-}
 
-func TestCodec_EncodeTopLevel(t *testing.T) {
-	codec, _ := newCodec(argsNewCodec{
-		pubKeyLength: 32,
-	})
-
-	t.Run("should err when unknown type", func(t *testing.T) {
-		type dummy struct {
-			foobar string
-		}
-
-		encoded, err := codec.EncodeTopLevel(&dummy{foobar: "hello"})
+		encoded, err = codec.EncodeTopLevel(&dummyType{foobar: "hello"})
 		require.ErrorContains(t, err, "unsupported type for top-level encoding: *abi.dummy")
 		require.Nil(t, encoded)
-	})
-}
 
-func TestCodec_DecodeNested(t *testing.T) {
-	codec, _ := newCodec(argsNewCodec{
-		pubKeyLength: 32,
-	})
-
-	t.Run("should err when unknown type", func(t *testing.T) {
-		type dummy struct {
-			foobar string
-		}
-
-		err := codec.DecodeNested([]byte{0x00}, &dummy{foobar: "hello"})
+		err = codec.DecodeNested([]byte{0x00}, &dummyType{foobar: "hello"})
 		require.ErrorContains(t, err, "unsupported type for nested decoding: *abi.dummy")
-	})
-}
 
-func TestCodec_DecodeTopLevel(t *testing.T) {
-	codec, _ := newCodec(argsNewCodec{
-		pubKeyLength: 32,
-	})
-
-	t.Run("should err when unknown type", func(t *testing.T) {
-		type dummy struct {
-			foobar string
-		}
-
-		err := codec.DecodeTopLevel([]byte{0x00}, &dummy{foobar: "hello"})
+		err = codec.DecodeTopLevel([]byte{0x00}, &dummyType{foobar: "hello"})
 		require.ErrorContains(t, err, "unsupported type for top-level decoding: *abi.dummy")
 	})
 }
 
+// testEncodeNested is a helper function to test nested encoding.
 func testEncodeNested(t *testing.T, codec *codec, value any, expected string) {
 	encoded, err := codec.EncodeNested(value)
 
@@ -95,6 +58,7 @@ func testEncodeNested(t *testing.T, codec *codec, value any, expected string) {
 	require.Equal(t, expected, hex.EncodeToString(encoded))
 }
 
+// testEncodeTopLevel is a helper function to test top-level encoding.
 func testEncodeTopLevel(t *testing.T, codec *codec, value any, expected string) {
 	encoded, err := codec.EncodeTopLevel(value)
 
@@ -102,6 +66,7 @@ func testEncodeTopLevel(t *testing.T, codec *codec, value any, expected string) 
 	require.Equal(t, expected, hex.EncodeToString(encoded))
 }
 
+// testDecodeNested is a helper function to test nested decoding.
 func testDecodeNested(t *testing.T, codec *codec, encodedData string, destination any, expected any) {
 	data, _ := hex.DecodeString(encodedData)
 	err := codec.DecodeNested(data, destination)
@@ -110,6 +75,7 @@ func testDecodeNested(t *testing.T, codec *codec, encodedData string, destinatio
 	require.Equal(t, expected, destination)
 }
 
+// testDecodeNestedWithError is a helper function to test nested decoding.
 func testDecodeNestedWithError(t *testing.T, codec *codec, encodedData string, destination any, expectedError string) {
 	data, _ := hex.DecodeString(encodedData)
 	err := codec.DecodeNested(data, destination)
@@ -117,6 +83,7 @@ func testDecodeNestedWithError(t *testing.T, codec *codec, encodedData string, d
 	require.ErrorContains(t, err, expectedError)
 }
 
+// testDecodeTopLevel is a helper function to test top-level decoding.
 func testDecodeTopLevel(t *testing.T, codec *codec, encodedData string, destination any, expected any) {
 	data, _ := hex.DecodeString(encodedData)
 	err := codec.DecodeTopLevel(data, destination)
@@ -125,6 +92,7 @@ func testDecodeTopLevel(t *testing.T, codec *codec, encodedData string, destinat
 	require.Equal(t, expected, destination)
 }
 
+// testDecodeTopLevelWithError is a helper function to test top-level decoding.
 func testDecodeTopLevelWithError(t *testing.T, codec *codec, encodedData string, destination any, expectedError string) {
 	data, _ := hex.DecodeString(encodedData)
 	err := codec.DecodeTopLevel(data, destination)
