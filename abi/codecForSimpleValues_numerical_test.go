@@ -108,6 +108,12 @@ func TestCodec_Numerical(t *testing.T) {
 		testDecodeNested(t, codec, "8000000000000000", &I64Value{}, &I64Value{Value: -9223372036854775808})
 	})
 
+	t.Run("should err on decode nested", func(t *testing.T) {
+		testDecodeNestedWithError(t, codec, "01", &U16Value{}, "cannot read exactly 2 bytes")
+		testDecodeNestedWithError(t, codec, "4142", &U32Value{}, "cannot read exactly 4 bytes")
+		testDecodeNestedWithError(t, codec, "41424344", &U64Value{}, "cannot read exactly 8 bytes")
+	})
+
 	t.Run("should decode top-level", func(t *testing.T) {
 		testDecodeTopLevel(t, codec, "", &U8Value{}, &U8Value{Value: 0})
 		testDecodeNested(t, codec, "01", &U8Value{}, &U8Value{Value: 1})

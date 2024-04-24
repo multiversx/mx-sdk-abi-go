@@ -60,6 +60,10 @@ func TestCodec_NumericalBig(t *testing.T) {
 		testDecodeNested(t, codec, "000000020100", &BigIntValue{}, &BigIntValue{Value: big.NewInt(256)})
 	})
 
+	t.Run("should err on decode nested", func(t *testing.T) {
+		testDecodeNestedWithError(t, codec, "0000000301", &BigIntValue{}, "cannot decode (nested) *abi.BigIntValue, because of: cannot read exactly 3 bytes")
+	})
+
 	t.Run("should decode top-level", func(t *testing.T) {
 		testDecodeTopLevel(t, codec, "", &BigUIntValue{}, &BigUIntValue{Value: big.NewInt(0)})
 		testDecodeTopLevel(t, codec, "01", &BigUIntValue{}, &BigUIntValue{Value: big.NewInt(1)})
@@ -74,5 +78,16 @@ func TestCodec_NumericalBig(t *testing.T) {
 		testDecodeTopLevel(t, codec, "0080", &BigIntValue{}, &BigIntValue{Value: big.NewInt(128)})
 		testDecodeTopLevel(t, codec, "00ff", &BigIntValue{}, &BigIntValue{Value: big.NewInt(255)})
 		testDecodeTopLevel(t, codec, "0100", &BigIntValue{}, &BigIntValue{Value: big.NewInt(256)})
+	})
+
+	t.Run("should err on decode top-level", func(t *testing.T) {
+		testDecodeTopLevelWithError(t, codec, "4142", &U8Value{}, "decoded value is too large")
+		testDecodeTopLevelWithError(t, codec, "4142", &I8Value{}, "decoded value is too large")
+		testDecodeTopLevelWithError(t, codec, "414243", &U16Value{}, "decoded value is too large")
+		testDecodeTopLevelWithError(t, codec, "414243", &I16Value{}, "decoded value is too large")
+		testDecodeTopLevelWithError(t, codec, "4142434445", &U32Value{}, "decoded value is too large")
+		testDecodeTopLevelWithError(t, codec, "4142434445", &I32Value{}, "decoded value is too large")
+		testDecodeTopLevelWithError(t, codec, "41424344454647489876", &U64Value{}, "decoded value is too large")
+		testDecodeTopLevelWithError(t, codec, "41424344454647489876", &I64Value{}, "decoded value is too large")
 	})
 }
