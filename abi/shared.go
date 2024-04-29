@@ -29,7 +29,7 @@ func decodeLength(reader io.Reader) (uint32, error) {
 
 func readBytesExactly(reader io.Reader, numBytes int) ([]byte, error) {
 	if numBytes == 0 {
-		return []byte{}, nil
+		return make([]byte, 0), nil
 	}
 
 	data := make([]byte, numBytes)

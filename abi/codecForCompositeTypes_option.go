@@ -8,11 +8,11 @@ import (
 
 func (c *codec) encodeNestedOption(writer io.Writer, value OptionValue) error {
 	if value.Value == nil {
-		_, err := writer.Write([]byte{0})
+		_, err := writer.Write([]byte{optionMarkerForAbsentValue})
 		return err
 	}
 
-	_, err := writer.Write([]byte{1})
+	_, err := writer.Write([]byte{optionMarkerForPresentValue})
 	if err != nil {
 		return err
 	}
@@ -25,7 +25,7 @@ func (c *codec) encodeTopLevelOption(writer io.Writer, value OptionValue) error 
 		return nil
 	}
 
-	_, err := writer.Write([]byte{1})
+	_, err := writer.Write([]byte{optionMarkerForPresentValue})
 	if err != nil {
 		return err
 	}
@@ -34,17 +34,23 @@ func (c *codec) encodeTopLevelOption(writer io.Writer, value OptionValue) error 
 }
 
 func (c *codec) decodeNestedOption(reader io.Reader, value *OptionValue) error {
-	bytes, err := readBytesExactly(reader, 1)
+	data, err := readBytesExactly(reader, 1)
 	if err != nil {
 		return err
 	}
 
-	if bytes[0] == 0 {
+	firstByte := data[0]
+
+	if firstByte == optionMarkerForAbsentValue {
 		value.Value = nil
 		return nil
 	}
 
-	return c.doDecodeNested(reader, value.Value)
+	if firstByte == optionMarkerForPresentValue {
+		return c.doDecodeNested(reader, value.Value)
+	}
+
+	return fmt.Errorf("invalid first byte for nested encoded option: %d", firstByte)
 }
 
 func (c *codec) decodeTopLevelOption(data []byte, value *OptionValue) error {
@@ -56,7 +62,7 @@ func (c *codec) decodeTopLevelOption(data []byte, value *OptionValue) error {
 	firstByte := data[0]
 	dataAfterFirstByte := data[1:]
 
-	if firstByte != 0x01 {
+	if firstByte != optionMarkerForPresentValue {
 		return fmt.Errorf("invalid first byte for top-level encoded option: %d", firstByte)
 	}
 

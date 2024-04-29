@@ -1,10 +1,7 @@
 package abi
 
 import (
-	"encoding/hex"
 	"testing"
-
-	"github.com/stretchr/testify/require"
 )
 
 func TestCodec_Option(t *testing.T) {
@@ -50,6 +47,10 @@ func TestCodec_Option(t *testing.T) {
 		)
 	})
 
+	t.Run("should err on decode nested (bad marker for value presence)", func(t *testing.T) {
+		testDecodeNestedWithError(t, codec, "072a", &OptionValue{}, "invalid first byte for nested encoded option: 7")
+	})
+
 	t.Run("should decode top-level", func(t *testing.T) {
 		testDecodeTopLevel(t, codec, "",
 			&OptionValue{},
@@ -69,12 +70,7 @@ func TestCodec_Option(t *testing.T) {
 	})
 
 	t.Run("should err on decode top-level (bad marker for value presence)", func(t *testing.T) {
-		data, _ := hex.DecodeString("002a")
-		err := codec.DecodeTopLevel(data, &OptionValue{})
-		require.ErrorContains(t, err, "invalid first byte for top-level encoded option: 0")
-
-		data, _ = hex.DecodeString("072a")
-		err = codec.DecodeTopLevel(data, &OptionValue{})
-		require.ErrorContains(t, err, "invalid first byte for top-level encoded option: 7")
+		testDecodeTopLevelWithError(t, codec, "002a", &OptionValue{}, "invalid first byte for top-level encoded option: 0")
+		testDecodeTopLevelWithError(t, codec, "072a", &OptionValue{}, "invalid first byte for top-level encoded option: 7")
 	})
 }

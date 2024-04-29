@@ -63,7 +63,7 @@ func (holder *partsHolder) hasAnyPart() bool {
 }
 
 func (holder *partsHolder) appendEmptyPart() {
-	holder.parts = append(holder.parts, []byte{})
+	holder.parts = append(holder.parts, make([]byte, 0))
 }
 
 // readWholeFocusedPart reads the whole focused part, if any. Otherwise, it returns an error.

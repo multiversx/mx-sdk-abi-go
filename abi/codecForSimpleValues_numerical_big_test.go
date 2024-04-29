@@ -79,15 +79,4 @@ func TestCodec_NumericalBig(t *testing.T) {
 		testDecodeTopLevel(t, codec, "00ff", &BigIntValue{}, &BigIntValue{Value: big.NewInt(255)})
 		testDecodeTopLevel(t, codec, "0100", &BigIntValue{}, &BigIntValue{Value: big.NewInt(256)})
 	})
-
-	t.Run("should err on decode top-level", func(t *testing.T) {
-		testDecodeTopLevelWithError(t, codec, "4142", &U8Value{}, "decoded value is too large")
-		testDecodeTopLevelWithError(t, codec, "4142", &I8Value{}, "decoded value is too large")
-		testDecodeTopLevelWithError(t, codec, "414243", &U16Value{}, "decoded value is too large")
-		testDecodeTopLevelWithError(t, codec, "414243", &I16Value{}, "decoded value is too large")
-		testDecodeTopLevelWithError(t, codec, "4142434445", &U32Value{}, "decoded value is too large")
-		testDecodeTopLevelWithError(t, codec, "4142434445", &I32Value{}, "decoded value is too large")
-		testDecodeTopLevelWithError(t, codec, "41424344454647489876", &U64Value{}, "decoded value is too large")
-		testDecodeTopLevelWithError(t, codec, "41424344454647489876", &I64Value{}, "decoded value is too large")
-	})
 }

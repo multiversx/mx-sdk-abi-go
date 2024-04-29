@@ -61,9 +61,9 @@ func (c *codec) doEncodeNested(writer io.Writer, value any) error {
 	case I64Value:
 		return c.encodeNestedNumber(writer, value.Value, 8)
 	case BigUIntValue:
-		return c.encodeNestedBigNumber(writer, value.Value, false)
+		return c.encodeNestedUnsignedBigNumber(writer, value.Value)
 	case BigIntValue:
-		return c.encodeNestedBigNumber(writer, value.Value, true)
+		return c.encodeNestedSignedBigNumber(writer, value.Value)
 	case AddressValue:
 		return c.encodeNestedAddress(writer, value)
 	case StringValue:
@@ -115,9 +115,9 @@ func (c *codec) doEncodeTopLevel(writer io.Writer, value any) error {
 	case I64Value:
 		return c.encodeTopLevelSignedNumber(writer, value.Value)
 	case BigUIntValue:
-		return c.encodeTopLevelBigNumber(writer, value.Value, false)
+		return c.encodeTopLevelUnsignedBigNumber(writer, value.Value)
 	case BigIntValue:
-		return c.encodeTopLevelBigNumber(writer, value.Value, true)
+		return c.encodeTopLevelSignedBigNumber(writer, value.Value)
 	case AddressValue:
 		return c.encodeTopLevelAddress(writer, value)
 	case StringValue:
@@ -169,7 +169,7 @@ func (c *codec) doDecodeNested(reader io.Reader, value any) error {
 	case *I64Value:
 		return c.decodeNestedNumber(reader, &value.Value, 8)
 	case *BigUIntValue:
-		n, err := c.decodeNestedBigNumber(reader, false)
+		n, err := c.decodeNestedUnsignedBigNumber(reader)
 		if err != nil {
 			return err
 		}
@@ -177,7 +177,7 @@ func (c *codec) doDecodeNested(reader io.Reader, value any) error {
 		value.Value = n
 		return nil
 	case *BigIntValue:
-		n, err := c.decodeNestedBigNumber(reader, true)
+		n, err := c.decodeNestedSignedBigNumber(reader)
 		if err != nil {
 			return err
 		}
@@ -275,10 +275,10 @@ func (c *codec) doDecodeTopLevel(data []byte, value any) error {
 
 		value.Value = int64(n)
 	case *BigUIntValue:
-		n := c.decodeTopLevelBigNumber(data, false)
+		n := c.decodeTopLevelUnsignedBigNumber(data)
 		value.Value = n
 	case *BigIntValue:
-		n := c.decodeTopLevelBigNumber(data, true)
+		n := c.decodeTopLevelSignedBigNumber(data)
 		value.Value = n
 	case *AddressValue:
 		return c.decodeTopLevelAddress(data, value)

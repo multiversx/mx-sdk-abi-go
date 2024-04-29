@@ -62,7 +62,7 @@ func (c *codec) decodeNestedNumber(reader io.Reader, value any, numBytes int) er
 func (c *codec) decodeTopLevelUnsignedNumber(data []byte, maxValue uint64) (uint64, error) {
 	b := big.NewInt(0).SetBytes(data)
 	if !b.IsUint64() {
-		return 0, fmt.Errorf("decoded value is too large (does not fit an uint64): %s", b)
+		return 0, fmt.Errorf("decoded value is too large or invalid: %s", b)
 	}
 
 	n := b.Uint64()
@@ -77,7 +77,7 @@ func (c *codec) decodeTopLevelSignedNumber(data []byte, maxValue int64) (int64, 
 	b := twos.FromBytes(data)
 
 	if !b.IsInt64() {
-		return 0, fmt.Errorf("decoded value is too large (does not fit an int64): %s", b)
+		return 0, fmt.Errorf("decoded value is too large or invalid: %s", b)
 	}
 
 	n := b.Int64()

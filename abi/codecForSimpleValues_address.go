@@ -6,10 +6,6 @@ import (
 )
 
 func (c *codec) encodeNestedAddress(writer io.Writer, value AddressValue) error {
-	return c.encodeTopLevelAddress(writer, value)
-}
-
-func (c *codec) encodeTopLevelAddress(writer io.Writer, value AddressValue) error {
 	err := c.checkPubKeyLength(value.Value)
 	if err != nil {
 		return err
@@ -17,6 +13,10 @@ func (c *codec) encodeTopLevelAddress(writer io.Writer, value AddressValue) erro
 
 	_, err = writer.Write(value.Value)
 	return err
+}
+
+func (c *codec) encodeTopLevelAddress(writer io.Writer, value AddressValue) error {
+	return c.encodeNestedAddress(writer, value)
 }
 
 func (c *codec) decodeNestedAddress(reader io.Reader, value *AddressValue) error {

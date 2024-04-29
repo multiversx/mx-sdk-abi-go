@@ -42,7 +42,7 @@ type I64Value struct {
 	Value int64
 }
 
-// BigIntValue is a wrapper for a big integer (unsigned)
+// BigUIntValue is a wrapper for a big integer (unsigned)
 type BigUIntValue struct {
 	Value *big.Int
 }
@@ -72,7 +72,7 @@ type BoolValue struct {
 	Value bool
 }
 
-// OptionValue is a wrapper for an optional value
+// OptionValue is a wrapper for an option value
 type OptionValue struct {
 	Value any
 }
