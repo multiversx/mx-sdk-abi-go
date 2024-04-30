@@ -7,7 +7,7 @@ import (
 )
 
 type codecForOption struct {
-	generalCodec *codec
+	generalCodec generalCodec
 }
 
 func (c *codecForOption) encodeNested(writer io.Writer, value OptionValue) error {

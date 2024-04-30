@@ -7,7 +7,7 @@ import (
 )
 
 type codeForStruct struct {
-	generalCodec *codec
+	generalCodec generalCodec
 }
 
 func (c *codeForStruct) encodeNested(writer io.Writer, value StructValue) error {

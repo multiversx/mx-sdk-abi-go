@@ -7,7 +7,7 @@ import (
 )
 
 type codecForEnum struct {
-	generalCodec *codec
+	generalCodec generalCodec
 }
 
 func (c *codecForEnum) encodeNested(writer io.Writer, value EnumValue) error {
