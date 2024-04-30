@@ -6,7 +6,11 @@ import (
 	"io"
 )
 
-func (c *codec) encodeNestedOption(writer io.Writer, value OptionValue) error {
+type codecForOption struct {
+	generalCodec *codec
+}
+
+func (c *codecForOption) encodeNested(writer io.Writer, value OptionValue) error {
 	if value.Value == nil {
 		_, err := writer.Write([]byte{optionMarkerForAbsentValue})
 		return err
@@ -17,10 +21,10 @@ func (c *codec) encodeNestedOption(writer io.Writer, value OptionValue) error {
 		return err
 	}
 
-	return c.doEncodeNested(writer, value.Value)
+	return c.generalCodec.doEncodeNested(writer, value.Value)
 }
 
-func (c *codec) encodeTopLevelOption(writer io.Writer, value OptionValue) error {
+func (c *codecForOption) encodeTopLevel(writer io.Writer, value OptionValue) error {
 	if value.Value == nil {
 		return nil
 	}
@@ -30,10 +34,10 @@ func (c *codec) encodeTopLevelOption(writer io.Writer, value OptionValue) error 
 		return err
 	}
 
-	return c.doEncodeNested(writer, value.Value)
+	return c.generalCodec.doEncodeNested(writer, value.Value)
 }
 
-func (c *codec) decodeNestedOption(reader io.Reader, value *OptionValue) error {
+func (c *codecForOption) decodeNested(reader io.Reader, value *OptionValue) error {
 	data, err := readBytesExactly(reader, 1)
 	if err != nil {
 		return err
@@ -47,13 +51,13 @@ func (c *codec) decodeNestedOption(reader io.Reader, value *OptionValue) error {
 	}
 
 	if firstByte == optionMarkerForPresentValue {
-		return c.doDecodeNested(reader, value.Value)
+		return c.generalCodec.doDecodeNested(reader, value.Value)
 	}
 
 	return fmt.Errorf("invalid first byte for nested encoded option: %d", firstByte)
 }
 
-func (c *codec) decodeTopLevelOption(data []byte, value *OptionValue) error {
+func (c *codecForOption) decodeTopLevel(data []byte, value *OptionValue) error {
 	if len(data) == 0 {
 		value.Value = nil
 		return nil
@@ -67,5 +71,5 @@ func (c *codec) decodeTopLevelOption(data []byte, value *OptionValue) error {
 	}
 
 	reader := bytes.NewReader(dataAfterFirstByte)
-	return c.doDecodeNested(reader, value.Value)
+	return c.generalCodec.doDecodeNested(reader, value.Value)
 }

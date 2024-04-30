@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func TestCodec_Numerical(t *testing.T) {
+func TestCodecForSmallInt(t *testing.T) {
 	codec, _ := newCodec(argsNewCodec{
 		pubKeyLength: 32,
 	})

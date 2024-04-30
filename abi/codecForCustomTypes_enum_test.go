@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func TestCodec_Enum(t *testing.T) {
+func TestCodecForEnum(t *testing.T) {
 	codec, _ := newCodec(argsNewCodec{
 		pubKeyLength: 32,
 	})

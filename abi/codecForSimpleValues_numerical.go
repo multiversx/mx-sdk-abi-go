@@ -10,7 +10,10 @@ import (
 	twos "github.com/multiversx/mx-components-big-int/twos-complement"
 )
 
-func (c *codec) encodeNestedNumber(writer io.Writer, value any, numBytes int) error {
+type codecForSmallInt struct {
+}
+
+func (c *codecForSmallInt) encodeNested(writer io.Writer, value any, numBytes int) error {
 	buffer := new(bytes.Buffer)
 
 	err := binary.Write(buffer, binary.BigEndian, value)
@@ -31,20 +34,20 @@ func (c *codec) encodeNestedNumber(writer io.Writer, value any, numBytes int) er
 	return nil
 }
 
-func (c *codec) encodeTopLevelUnsignedNumber(writer io.Writer, value uint64) error {
+func (c *codecForSmallInt) encodeTopLevelUnsigned(writer io.Writer, value uint64) error {
 	b := big.NewInt(0).SetUint64(value)
 	data := b.Bytes()
 	_, err := writer.Write(data)
 	return err
 }
 
-func (c *codec) encodeTopLevelSignedNumber(writer io.Writer, value int64) error {
+func (c *codecForSmallInt) encodeTopLevelSigned(writer io.Writer, value int64) error {
 	data := twos.ToBytes(big.NewInt(value))
 	_, err := writer.Write(data)
 	return err
 }
 
-func (c *codec) decodeNestedNumber(reader io.Reader, value any, numBytes int) error {
+func (c *codecForSmallInt) decodeNested(reader io.Reader, value any, numBytes int) error {
 	data, err := readBytesExactly(reader, numBytes)
 	if err != nil {
 		return err
@@ -59,7 +62,7 @@ func (c *codec) decodeNestedNumber(reader io.Reader, value any, numBytes int) er
 	return nil
 }
 
-func (c *codec) decodeTopLevelUnsignedNumber(data []byte, maxValue uint64) (uint64, error) {
+func (c *codecForSmallInt) decodeTopLevelUnsigned(data []byte, maxValue uint64) (uint64, error) {
 	b := big.NewInt(0).SetBytes(data)
 	if !b.IsUint64() {
 		return 0, fmt.Errorf("decoded value is too large or invalid: %s", b)
@@ -73,7 +76,7 @@ func (c *codec) decodeTopLevelUnsignedNumber(data []byte, maxValue uint64) (uint
 	return n, nil
 }
 
-func (c *codec) decodeTopLevelSignedNumber(data []byte, maxValue int64) (int64, error) {
+func (c *codecForSmallInt) decodeTopLevelSigned(data []byte, maxValue int64) (int64, error) {
 	b := twos.FromBytes(data)
 
 	if !b.IsInt64() {

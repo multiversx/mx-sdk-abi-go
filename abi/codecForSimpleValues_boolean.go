@@ -5,7 +5,10 @@ import (
 	"io"
 )
 
-func (c *codec) encodeNestedBool(writer io.Writer, value BoolValue) error {
+type codecForBool struct {
+}
+
+func (c *codecForBool) encodeNested(writer io.Writer, value BoolValue) error {
 	if value.Value {
 		_, err := writer.Write([]byte{trueAsByte})
 		return err
@@ -15,7 +18,7 @@ func (c *codec) encodeNestedBool(writer io.Writer, value BoolValue) error {
 	return err
 }
 
-func (c *codec) encodeTopLevelBool(writer io.Writer, value BoolValue) error {
+func (c *codecForBool) encodeTopLevel(writer io.Writer, value BoolValue) error {
 	if !value.Value {
 		// For "false", write nothing.
 		return nil
@@ -25,7 +28,7 @@ func (c *codec) encodeTopLevelBool(writer io.Writer, value BoolValue) error {
 	return err
 }
 
-func (c *codec) decodeNestedBool(reader io.Reader, value *BoolValue) error {
+func (c *codecForBool) decodeNested(reader io.Reader, value *BoolValue) error {
 	data, err := readBytesExactly(reader, 1)
 	if err != nil {
 		return err
@@ -39,7 +42,7 @@ func (c *codec) decodeNestedBool(reader io.Reader, value *BoolValue) error {
 	return nil
 }
 
-func (c *codec) decodeTopLevelBool(data []byte, value *BoolValue) error {
+func (c *codecForBool) decodeTopLevel(data []byte, value *BoolValue) error {
 	if len(data) == 0 {
 		value.Value = false
 		return nil
@@ -58,7 +61,7 @@ func (c *codec) decodeTopLevelBool(data []byte, value *BoolValue) error {
 	return fmt.Errorf("unexpected boolean value: %v", data)
 }
 
-func (c *codec) byteToBool(data uint8) (bool, error) {
+func (c *codecForBool) byteToBool(data uint8) (bool, error) {
 	switch data {
 	case trueAsByte:
 		return true, nil

@@ -7,7 +7,10 @@ import (
 	twos "github.com/multiversx/mx-components-big-int/twos-complement"
 )
 
-func (c *codec) encodeNestedUnsignedBigNumber(writer io.Writer, value *big.Int) error {
+type codecForBigInt struct {
+}
+
+func (c *codecForBigInt) encodeNestedUnsigned(writer io.Writer, value *big.Int) error {
 	data := value.Bytes()
 	dataLength := len(data)
 
@@ -26,7 +29,7 @@ func (c *codec) encodeNestedUnsignedBigNumber(writer io.Writer, value *big.Int) 
 	return nil
 }
 
-func (c *codec) encodeNestedSignedBigNumber(writer io.Writer, value *big.Int) error {
+func (c *codecForBigInt) encodeNestedSigned(writer io.Writer, value *big.Int) error {
 	data := twos.ToBytes(value)
 	dataLength := len(data)
 
@@ -45,7 +48,7 @@ func (c *codec) encodeNestedSignedBigNumber(writer io.Writer, value *big.Int) er
 	return nil
 }
 
-func (c *codec) encodeTopLevelUnsignedBigNumber(writer io.Writer, value *big.Int) error {
+func (c *codecForBigInt) encodeTopLevelUnsigned(writer io.Writer, value *big.Int) error {
 	data := value.Bytes()
 	_, err := writer.Write(data)
 	if err != nil {
@@ -55,7 +58,7 @@ func (c *codec) encodeTopLevelUnsignedBigNumber(writer io.Writer, value *big.Int
 	return nil
 }
 
-func (c *codec) encodeTopLevelSignedBigNumber(writer io.Writer, value *big.Int) error {
+func (c *codecForBigInt) encodeTopLevelSigned(writer io.Writer, value *big.Int) error {
 	data := twos.ToBytes(value)
 	_, err := writer.Write(data)
 	if err != nil {
@@ -65,7 +68,7 @@ func (c *codec) encodeTopLevelSignedBigNumber(writer io.Writer, value *big.Int) 
 	return nil
 }
 
-func (c *codec) decodeNestedUnsignedBigNumber(reader io.Reader) (*big.Int, error) {
+func (c *codecForBigInt) decodeNestedUnsigned(reader io.Reader) (*big.Int, error) {
 	// Read the length of the payload
 	length, err := decodeLength(reader)
 	if err != nil {
@@ -81,7 +84,7 @@ func (c *codec) decodeNestedUnsignedBigNumber(reader io.Reader) (*big.Int, error
 	return big.NewInt(0).SetBytes(data), nil
 }
 
-func (c *codec) decodeNestedSignedBigNumber(reader io.Reader) (*big.Int, error) {
+func (c *codecForBigInt) decodeNestedSigned(reader io.Reader) (*big.Int, error) {
 	// Read the length of the payload
 	length, err := decodeLength(reader)
 	if err != nil {
@@ -97,10 +100,10 @@ func (c *codec) decodeNestedSignedBigNumber(reader io.Reader) (*big.Int, error) 
 	return twos.FromBytes(data), nil
 }
 
-func (c *codec) decodeTopLevelUnsignedBigNumber(data []byte) *big.Int {
+func (c *codecForBigInt) decodeTopLevelUnsigned(data []byte) *big.Int {
 	return big.NewInt(0).SetBytes(data)
 }
 
-func (c *codec) decodeTopLevelSignedBigNumber(data []byte) *big.Int {
+func (c *codecForBigInt) decodeTopLevelSigned(data []byte) *big.Int {
 	return twos.FromBytes(data)
 }

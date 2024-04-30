@@ -4,7 +4,10 @@ import (
 	"io"
 )
 
-func (c *codec) encodeNestedBytes(writer io.Writer, value BytesValue) error {
+type codecForBytes struct {
+}
+
+func (c *codecForBytes) encodeNested(writer io.Writer, value BytesValue) error {
 	err := encodeLength(writer, uint32(len(value.Value)))
 	if err != nil {
 		return err
@@ -14,12 +17,12 @@ func (c *codec) encodeNestedBytes(writer io.Writer, value BytesValue) error {
 	return err
 }
 
-func (c *codec) encodeTopLevelBytes(writer io.Writer, value BytesValue) error {
+func (c *codecForBytes) encodeTopLevel(writer io.Writer, value BytesValue) error {
 	_, err := writer.Write(value.Value)
 	return err
 }
 
-func (c *codec) decodeNestedBytes(reader io.Reader, value *BytesValue) error {
+func (c *codecForBytes) decodeNested(reader io.Reader, value *BytesValue) error {
 	length, err := decodeLength(reader)
 	if err != nil {
 		return err
@@ -34,7 +37,7 @@ func (c *codec) decodeNestedBytes(reader io.Reader, value *BytesValue) error {
 	return nil
 }
 
-func (c *codec) decodeTopLevelBytes(data []byte, value *BytesValue) error {
+func (c *codecForBytes) decodeTopLevel(data []byte, value *BytesValue) error {
 	value.Value = data
 	return nil
 }

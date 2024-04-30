@@ -5,7 +5,11 @@ import (
 	"io"
 )
 
-func (c *codec) encodeNestedAddress(writer io.Writer, value AddressValue) error {
+type codecForAddress struct {
+	pubKeyLength int
+}
+
+func (c *codecForAddress) encodeNested(writer io.Writer, value AddressValue) error {
 	err := c.checkPubKeyLength(value.Value)
 	if err != nil {
 		return err
@@ -15,11 +19,11 @@ func (c *codec) encodeNestedAddress(writer io.Writer, value AddressValue) error 
 	return err
 }
 
-func (c *codec) encodeTopLevelAddress(writer io.Writer, value AddressValue) error {
-	return c.encodeNestedAddress(writer, value)
+func (c *codecForAddress) encodeTopLevel(writer io.Writer, value AddressValue) error {
+	return c.encodeNested(writer, value)
 }
 
-func (c *codec) decodeNestedAddress(reader io.Reader, value *AddressValue) error {
+func (c *codecForAddress) decodeNested(reader io.Reader, value *AddressValue) error {
 	data, err := readBytesExactly(reader, c.pubKeyLength)
 	if err != nil {
 		return err
@@ -29,7 +33,7 @@ func (c *codec) decodeNestedAddress(reader io.Reader, value *AddressValue) error
 	return nil
 }
 
-func (c *codec) decodeTopLevelAddress(data []byte, value *AddressValue) error {
+func (c *codecForAddress) decodeTopLevel(data []byte, value *AddressValue) error {
 	err := c.checkPubKeyLength(data)
 	if err != nil {
 		return err
@@ -39,7 +43,7 @@ func (c *codec) decodeTopLevelAddress(data []byte, value *AddressValue) error {
 	return nil
 }
 
-func (c *codec) checkPubKeyLength(pubkey []byte) error {
+func (c *codecForAddress) checkPubKeyLength(pubkey []byte) error {
 	if len(pubkey) != c.pubKeyLength {
 		return fmt.Errorf("public key (address) has invalid length: %d", len(pubkey))
 	}
