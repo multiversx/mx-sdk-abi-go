@@ -198,6 +198,7 @@ func (s *serializer) serializeDirectlyEncodableValue(partsHolder *partsHolder, v
 
 func (s *serializer) deserializeOutputOptionalValue(partsHolder *partsHolder, value *OutputOptionalValue) error {
 	for partsHolder.isFocusedBeyondLastPart() {
+		value.Value = nil
 		return nil
 	}
 
@@ -206,7 +207,6 @@ func (s *serializer) deserializeOutputOptionalValue(partsHolder *partsHolder, va
 		return err
 	}
 
-	value.HasValue = true
 	return nil
 }
 

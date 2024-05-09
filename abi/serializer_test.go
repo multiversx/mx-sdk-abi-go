@@ -239,7 +239,7 @@ func TestSerializer_Deserialize(t *testing.T) {
 		require.Nil(t, err)
 		require.Equal(t, []any{
 			&U8Value{Value: 0x42},
-			&OutputOptionalValue{HasValue: false},
+			&OutputOptionalValue{},
 		}, outputValues)
 	})
 
@@ -254,7 +254,7 @@ func TestSerializer_Deserialize(t *testing.T) {
 		require.Nil(t, err)
 		require.Equal(t, []any{
 			&U8Value{Value: 0x42},
-			&OutputOptionalValue{Value: &U8Value{Value: 0x43}, HasValue: true},
+			&OutputOptionalValue{Value: &U8Value{Value: 0x43}},
 		}, outputValues)
 	})
 
