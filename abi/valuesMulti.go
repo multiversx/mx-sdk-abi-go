@@ -28,6 +28,5 @@ type InputOptionalValue struct {
 
 // OutputOptionalValue holds an optional value (used for decoding)
 type OutputOptionalValue struct {
-	Value    any
-	HasValue bool
+	Value any
 }
