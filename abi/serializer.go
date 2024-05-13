@@ -87,7 +87,7 @@ func (s *serializer) doSerialize(partsHolder *partsHolder, inputValues []any) er
 			err = s.serializeInputVariadicValues(partsHolder, value)
 		default:
 			partsHolder.appendEmptyPart()
-			err = s.serializeDirectlyEncodableValue(partsHolder, value)
+			err = s.serializeSingleValue(partsHolder, value)
 		}
 
 		if err != nil {
@@ -146,7 +146,7 @@ func (s *serializer) doDeserialize(partsHolder *partsHolder, outputValues []any)
 
 			err = s.deserializeOutputVariadicValues(partsHolder, value)
 		default:
-			err = s.deserializeDirectlyEncodableValue(partsHolder, value)
+			err = s.deserializeSingleValue(partsHolder, value)
 		}
 
 		if err != nil {
@@ -187,7 +187,7 @@ func (s *serializer) serializeInputVariadicValues(partsHolder *partsHolder, valu
 	return nil
 }
 
-func (s *serializer) serializeDirectlyEncodableValue(partsHolder *partsHolder, value any) error {
+func (s *serializer) serializeSingleValue(partsHolder *partsHolder, value any) error {
 	data, err := s.codec.EncodeTopLevel(value)
 	if err != nil {
 		return err
@@ -240,7 +240,7 @@ func (s *serializer) deserializeOutputVariadicValues(partsHolder *partsHolder, v
 	return nil
 }
 
-func (s *serializer) deserializeDirectlyEncodableValue(partsHolder *partsHolder, value any) error {
+func (s *serializer) deserializeSingleValue(partsHolder *partsHolder, value any) error {
 	part, err := partsHolder.readWholeFocusedPart()
 	if err != nil {
 		return err
