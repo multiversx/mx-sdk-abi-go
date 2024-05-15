@@ -8,7 +8,7 @@ import (
 )
 
 // testEncodeNested is a helper function to test nested encoding.
-func testEncodeNested(t *testing.T, codec *codec, value singleValue, expected string) {
+func testEncodeNested(t *testing.T, codec *codec, value SingleValue, expected string) {
 	encoded, err := codec.EncodeNested(value)
 
 	require.NoError(t, err)
@@ -16,7 +16,7 @@ func testEncodeNested(t *testing.T, codec *codec, value singleValue, expected st
 }
 
 // testEncodeTopLevel is a helper function to test top-level encoding.
-func testEncodeTopLevel(t *testing.T, codec *codec, value singleValue, expected string) {
+func testEncodeTopLevel(t *testing.T, codec *codec, value SingleValue, expected string) {
 	encoded, err := codec.EncodeTopLevel(value)
 
 	require.NoError(t, err)
@@ -24,7 +24,7 @@ func testEncodeTopLevel(t *testing.T, codec *codec, value singleValue, expected 
 }
 
 // testDecodeNested is a helper function to test nested decoding.
-func testDecodeNested(t *testing.T, codec *codec, encodedData string, destination singleValue, expected singleValue) {
+func testDecodeNested(t *testing.T, codec *codec, encodedData string, destination SingleValue, expected SingleValue) {
 	data, _ := hex.DecodeString(encodedData)
 	err := codec.DecodeNested(data, destination)
 
@@ -33,7 +33,7 @@ func testDecodeNested(t *testing.T, codec *codec, encodedData string, destinatio
 }
 
 // testDecodeNestedWithError is a helper function to test nested decoding.
-func testDecodeNestedWithError(t *testing.T, codec *codec, encodedData string, destination singleValue, expectedError string) {
+func testDecodeNestedWithError(t *testing.T, codec *codec, encodedData string, destination SingleValue, expectedError string) {
 	data, _ := hex.DecodeString(encodedData)
 	err := codec.DecodeNested(data, destination)
 
@@ -41,7 +41,7 @@ func testDecodeNestedWithError(t *testing.T, codec *codec, encodedData string, d
 }
 
 // testDecodeTopLevel is a helper function to test top-level decoding.
-func testDecodeTopLevel(t *testing.T, codec *codec, encodedData string, destination singleValue, expected singleValue) {
+func testDecodeTopLevel(t *testing.T, codec *codec, encodedData string, destination SingleValue, expected SingleValue) {
 	data, _ := hex.DecodeString(encodedData)
 	err := codec.DecodeTopLevel(data, destination)
 
@@ -50,7 +50,7 @@ func testDecodeTopLevel(t *testing.T, codec *codec, encodedData string, destinat
 }
 
 // testDecodeTopLevelWithError is a helper function to test top-level decoding.
-func testDecodeTopLevelWithError(t *testing.T, codec *codec, encodedData string, destination singleValue, expectedError string) {
+func testDecodeTopLevelWithError(t *testing.T, codec *codec, encodedData string, destination SingleValue, expectedError string) {
 	data, _ := hex.DecodeString(encodedData)
 	err := codec.DecodeTopLevel(data, destination)
 

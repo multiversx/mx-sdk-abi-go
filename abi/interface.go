@@ -2,9 +2,11 @@ package abi
 
 import "io"
 
-type singleValue interface {
-	encodeNested(writer io.Writer) error
-	encodeTopLevel(writer io.Writer) error
-	decodeNested(reader io.Reader) error
-	decodeTopLevel(data []byte) error
+// SingleValue is the interface to be implemented by all "single value" types, with respect to:
+// https://docs.multiversx.com/developers/data/serialization-overview
+type SingleValue interface {
+	EncodeNested(writer io.Writer) error
+	EncodeTopLevel(writer io.Writer) error
+	DecodeNested(reader io.Reader) error
+	DecodeTopLevel(data []byte) error
 }

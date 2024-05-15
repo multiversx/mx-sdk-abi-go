@@ -10,7 +10,8 @@ type BigUIntValue struct {
 	Value *big.Int
 }
 
-func (value *BigUIntValue) encodeNested(writer io.Writer) error {
+// EncodeNested encodes the value in the nested form
+func (value *BigUIntValue) EncodeNested(writer io.Writer) error {
 	data := value.Value.Bytes()
 	dataLength := len(data)
 
@@ -29,7 +30,8 @@ func (value *BigUIntValue) encodeNested(writer io.Writer) error {
 	return nil
 }
 
-func (value *BigUIntValue) encodeTopLevel(writer io.Writer) error {
+// EncodeTopLevel encodes the value in the top-level form
+func (value *BigUIntValue) EncodeTopLevel(writer io.Writer) error {
 	data := value.Value.Bytes()
 	_, err := writer.Write(data)
 	if err != nil {
@@ -39,7 +41,8 @@ func (value *BigUIntValue) encodeTopLevel(writer io.Writer) error {
 	return nil
 }
 
-func (value *BigUIntValue) decodeNested(reader io.Reader) error {
+// DecodeNested decodes the value from the nested form
+func (value *BigUIntValue) DecodeNested(reader io.Reader) error {
 	// Read the length of the payload
 	length, err := decodeLength(reader)
 	if err != nil {
@@ -56,7 +59,8 @@ func (value *BigUIntValue) decodeNested(reader io.Reader) error {
 	return nil
 }
 
-func (value *BigUIntValue) decodeTopLevel(data []byte) error {
+// DecodeTopLevel decodes the value from the top-level form
+func (value *BigUIntValue) DecodeTopLevel(data []byte) error {
 	value.Value = big.NewInt(0).SetBytes(data)
 	return nil
 }

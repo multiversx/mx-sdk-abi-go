@@ -85,7 +85,7 @@ func (s *serializer) doSerialize(partsHolder *partsHolder, inputValues []any) er
 			}
 
 			err = s.serializeInputVariadicValues(partsHolder, value)
-		case singleValue:
+		case SingleValue:
 			partsHolder.appendEmptyPart()
 			err = s.serializeSingleValue(partsHolder, value)
 		default:
@@ -147,7 +147,7 @@ func (s *serializer) doDeserialize(partsHolder *partsHolder, outputValues []any)
 			}
 
 			err = s.deserializeOutputVariadicValues(partsHolder, value)
-		case singleValue:
+		case SingleValue:
 			err = s.deserializeSingleValue(partsHolder, value)
 		default:
 			return fmt.Errorf("unsupported type for deserialization: %T", value)
@@ -191,7 +191,7 @@ func (s *serializer) serializeInputVariadicValues(partsHolder *partsHolder, valu
 	return nil
 }
 
-func (s *serializer) serializeSingleValue(partsHolder *partsHolder, value singleValue) error {
+func (s *serializer) serializeSingleValue(partsHolder *partsHolder, value SingleValue) error {
 	data, err := s.codec.EncodeTopLevel(value)
 	if err != nil {
 		return err
@@ -244,7 +244,7 @@ func (s *serializer) deserializeOutputVariadicValues(partsHolder *partsHolder, v
 	return nil
 }
 
-func (s *serializer) deserializeSingleValue(partsHolder *partsHolder, value singleValue) error {
+func (s *serializer) deserializeSingleValue(partsHolder *partsHolder, value SingleValue) error {
 	part, err := partsHolder.readWholeFocusedPart()
 	if err != nil {
 		return err

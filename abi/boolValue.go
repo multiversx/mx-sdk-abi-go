@@ -10,7 +10,8 @@ type BoolValue struct {
 	Value bool
 }
 
-func (value *BoolValue) encodeNested(writer io.Writer) error {
+// EncodeNested encodes the value in the nested form
+func (value *BoolValue) EncodeNested(writer io.Writer) error {
 	if value.Value {
 		_, err := writer.Write([]byte{trueAsByte})
 		return err
@@ -20,7 +21,8 @@ func (value *BoolValue) encodeNested(writer io.Writer) error {
 	return err
 }
 
-func (value *BoolValue) encodeTopLevel(writer io.Writer) error {
+// EncodeTopLevel encodes the value in the top-level form
+func (value *BoolValue) EncodeTopLevel(writer io.Writer) error {
 	if !value.Value {
 		// For "false", write nothing.
 		return nil
@@ -30,7 +32,8 @@ func (value *BoolValue) encodeTopLevel(writer io.Writer) error {
 	return err
 }
 
-func (value *BoolValue) decodeNested(reader io.Reader) error {
+// DecodeNested decodes the value from the nested form
+func (value *BoolValue) DecodeNested(reader io.Reader) error {
 	data, err := readBytesExactly(reader, 1)
 	if err != nil {
 		return err
@@ -44,7 +47,8 @@ func (value *BoolValue) decodeNested(reader io.Reader) error {
 	return nil
 }
 
-func (value *BoolValue) decodeTopLevel(data []byte) error {
+// DecodeTopLevel decodes the value from the top-level form
+func (value *BoolValue) DecodeTopLevel(data []byte) error {
 	if len(data) == 0 {
 		value.Value = false
 		return nil

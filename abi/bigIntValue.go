@@ -12,7 +12,8 @@ type BigIntValue struct {
 	Value *big.Int
 }
 
-func (value *BigIntValue) encodeNested(writer io.Writer) error {
+// EncodeNested encodes the value in the nested form
+func (value *BigIntValue) EncodeNested(writer io.Writer) error {
 	data := twos.ToBytes(value.Value)
 	dataLength := len(data)
 
@@ -31,7 +32,8 @@ func (value *BigIntValue) encodeNested(writer io.Writer) error {
 	return nil
 }
 
-func (value *BigIntValue) encodeTopLevel(writer io.Writer) error {
+// EncodeTopLevel encodes the value in the top-level form
+func (value *BigIntValue) EncodeTopLevel(writer io.Writer) error {
 	data := twos.ToBytes(value.Value)
 	_, err := writer.Write(data)
 	if err != nil {
@@ -41,7 +43,8 @@ func (value *BigIntValue) encodeTopLevel(writer io.Writer) error {
 	return nil
 }
 
-func (value *BigIntValue) decodeNested(reader io.Reader) error {
+// DecodeNested decodes the value from the nested form
+func (value *BigIntValue) DecodeNested(reader io.Reader) error {
 	// Read the length of the payload
 	length, err := decodeLength(reader)
 	if err != nil {
@@ -58,7 +61,8 @@ func (value *BigIntValue) decodeNested(reader io.Reader) error {
 	return nil
 }
 
-func (value *BigIntValue) decodeTopLevel(data []byte) error {
+// DecodeTopLevel decodes the value from the top-level form
+func (value *BigIntValue) DecodeTopLevel(data []byte) error {
 	value.Value = twos.FromBytes(data)
 	return nil
 }

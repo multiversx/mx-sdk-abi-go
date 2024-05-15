@@ -8,10 +8,11 @@ import (
 
 // OptionValue is a wrapper for an option value
 type OptionValue struct {
-	Value singleValue
+	Value SingleValue
 }
 
-func (value *OptionValue) encodeNested(writer io.Writer) error {
+// EncodeNested encodes the value in the nested form
+func (value *OptionValue) EncodeNested(writer io.Writer) error {
 	if value.Value == nil {
 		_, err := writer.Write([]byte{optionMarkerForAbsentValue})
 		return err
@@ -22,10 +23,11 @@ func (value *OptionValue) encodeNested(writer io.Writer) error {
 		return err
 	}
 
-	return value.Value.encodeNested(writer)
+	return value.Value.EncodeNested(writer)
 }
 
-func (value *OptionValue) encodeTopLevel(writer io.Writer) error {
+// EncodeTopLevel encodes the value in the top-level form
+func (value *OptionValue) EncodeTopLevel(writer io.Writer) error {
 	if value.Value == nil {
 		return nil
 	}
@@ -35,10 +37,11 @@ func (value *OptionValue) encodeTopLevel(writer io.Writer) error {
 		return err
 	}
 
-	return value.Value.encodeNested(writer)
+	return value.Value.EncodeNested(writer)
 }
 
-func (value *OptionValue) decodeNested(reader io.Reader) error {
+// DecodeNested decodes the value from the nested form
+func (value *OptionValue) DecodeNested(reader io.Reader) error {
 	data, err := readBytesExactly(reader, 1)
 	if err != nil {
 		return err
@@ -52,13 +55,14 @@ func (value *OptionValue) decodeNested(reader io.Reader) error {
 	}
 
 	if firstByte == optionMarkerForPresentValue {
-		return value.Value.decodeNested(reader)
+		return value.Value.DecodeNested(reader)
 	}
 
 	return fmt.Errorf("invalid first byte for nested encoded option: %d", firstByte)
 }
 
-func (value *OptionValue) decodeTopLevel(data []byte) error {
+// DecodeTopLevel decodes the value from the top-level form
+func (value *OptionValue) DecodeTopLevel(data []byte) error {
 	if len(data) == 0 {
 		value.Value = nil
 		return nil
@@ -72,5 +76,5 @@ func (value *OptionValue) decodeTopLevel(data []byte) error {
 	}
 
 	reader := bytes.NewReader(dataAfterFirstByte)
-	return value.Value.decodeNested(reader)
+	return value.Value.DecodeNested(reader)
 }

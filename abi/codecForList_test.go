@@ -13,7 +13,7 @@ func TestListValue(t *testing.T) {
 	t.Run("should encode nested", func(t *testing.T) {
 		testEncodeNested(t, codec,
 			&ListValue{
-				Items: []singleValue{
+				Items: []SingleValue{
 					&U16Value{Value: 1},
 					&U16Value{Value: 2},
 					&U16Value{Value: 3},
@@ -26,7 +26,7 @@ func TestListValue(t *testing.T) {
 	t.Run("should encode top-level", func(t *testing.T) {
 		testEncodeTopLevel(t, codec,
 			&ListValue{
-				Items: []singleValue{
+				Items: []SingleValue{
 					&U16Value{Value: 1},
 					&U16Value{Value: 2},
 					&U16Value{Value: 3},
@@ -40,14 +40,14 @@ func TestListValue(t *testing.T) {
 		data, _ := hex.DecodeString("00000003000100020003")
 
 		destination := &ListValue{
-			ItemCreator: func() singleValue { return &U16Value{} },
-			Items:       []singleValue{},
+			ItemCreator: func() SingleValue { return &U16Value{} },
+			Items:       []SingleValue{},
 		}
 
 		err := codec.DecodeNested(data, destination)
 		require.NoError(t, err)
 		require.Equal(t,
-			[]singleValue{
+			[]SingleValue{
 				&U16Value{Value: 1},
 				&U16Value{Value: 2},
 				&U16Value{Value: 3},
@@ -60,14 +60,14 @@ func TestListValue(t *testing.T) {
 		data, _ := hex.DecodeString("000100020003")
 
 		destination := &ListValue{
-			ItemCreator: func() singleValue { return &U16Value{} },
-			Items:       []singleValue{},
+			ItemCreator: func() SingleValue { return &U16Value{} },
+			Items:       []SingleValue{},
 		}
 
 		err := codec.DecodeTopLevel(data, destination)
 		require.NoError(t, err)
 		require.Equal(t,
-			[]singleValue{
+			[]SingleValue{
 				&U16Value{Value: 1},
 				&U16Value{Value: 2},
 				&U16Value{Value: 3},

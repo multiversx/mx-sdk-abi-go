@@ -16,19 +16,23 @@ type U8Value struct {
 	Value uint8
 }
 
-func (value *U8Value) encodeNested(writer io.Writer) error {
+// EncodeNested encodes the value in the nested form
+func (value *U8Value) EncodeNested(writer io.Writer) error {
 	return encodeNestedSmallInt(writer, value.Value, 1)
 }
 
-func (value *U8Value) encodeTopLevel(writer io.Writer) error {
+// EncodeTopLevel encodes the value in the top-level form
+func (value *U8Value) EncodeTopLevel(writer io.Writer) error {
 	return encodeTopLevelUnsignedSmallInt(writer, uint64(value.Value))
 }
 
-func (value *U8Value) decodeNested(reader io.Reader) error {
+// DecodeNested decodes the value from the nested form
+func (value *U8Value) DecodeNested(reader io.Reader) error {
 	return decodeNestedSmallInt(reader, &value.Value, 1)
 }
 
-func (value *U8Value) decodeTopLevel(data []byte) error {
+// DecodeTopLevel decodes the value from the top-level form
+func (value *U8Value) DecodeTopLevel(data []byte) error {
 	decoded, err := decodeTopLevelUnsignedSmallInt(data, math.MaxUint8)
 	if err != nil {
 		return err
@@ -43,19 +47,23 @@ type U16Value struct {
 	Value uint16
 }
 
-func (value *U16Value) encodeNested(writer io.Writer) error {
+// EncodeNested encodes the value in the nested form
+func (value *U16Value) EncodeNested(writer io.Writer) error {
 	return encodeNestedSmallInt(writer, value.Value, 2)
 }
 
-func (value *U16Value) encodeTopLevel(writer io.Writer) error {
+// EncodeTopLevel encodes the value in the top-level form
+func (value *U16Value) EncodeTopLevel(writer io.Writer) error {
 	return encodeTopLevelUnsignedSmallInt(writer, uint64(value.Value))
 }
 
-func (value *U16Value) decodeNested(reader io.Reader) error {
+// DecodeNested decodes the value from the nested form
+func (value *U16Value) DecodeNested(reader io.Reader) error {
 	return decodeNestedSmallInt(reader, &value.Value, 2)
 }
 
-func (value *U16Value) decodeTopLevel(data []byte) error {
+// DecodeTopLevel decodes the value from the top-level form
+func (value *U16Value) DecodeTopLevel(data []byte) error {
 	decoded, err := decodeTopLevelUnsignedSmallInt(data, math.MaxUint16)
 	if err != nil {
 		return err
@@ -70,19 +78,23 @@ type U32Value struct {
 	Value uint32
 }
 
-func (value *U32Value) encodeNested(writer io.Writer) error {
+// EncodeNested encodes the value in the nested form
+func (value *U32Value) EncodeNested(writer io.Writer) error {
 	return encodeNestedSmallInt(writer, value.Value, 4)
 }
 
-func (value *U32Value) encodeTopLevel(writer io.Writer) error {
+// EncodeTopLevel encodes the value in the top-level form
+func (value *U32Value) EncodeTopLevel(writer io.Writer) error {
 	return encodeTopLevelUnsignedSmallInt(writer, uint64(value.Value))
 }
 
-func (value *U32Value) decodeNested(reader io.Reader) error {
+// DecodeNested decodes the value from the nested form
+func (value *U32Value) DecodeNested(reader io.Reader) error {
 	return decodeNestedSmallInt(reader, &value.Value, 4)
 }
 
-func (value *U32Value) decodeTopLevel(data []byte) error {
+// DecodeTopLevel decodes the value from the top-level form
+func (value *U32Value) DecodeTopLevel(data []byte) error {
 	decoded, err := decodeTopLevelUnsignedSmallInt(data, math.MaxUint32)
 	if err != nil {
 		return err
@@ -97,19 +109,23 @@ type U64Value struct {
 	Value uint64
 }
 
-func (value *U64Value) encodeNested(writer io.Writer) error {
+// EncodeNested encodes the value in the nested form
+func (value *U64Value) EncodeNested(writer io.Writer) error {
 	return encodeNestedSmallInt(writer, value.Value, 8)
 }
 
-func (value *U64Value) encodeTopLevel(writer io.Writer) error {
+// EncodeTopLevel encodes the value in the top-level form
+func (value *U64Value) EncodeTopLevel(writer io.Writer) error {
 	return encodeTopLevelUnsignedSmallInt(writer, uint64(value.Value))
 }
 
-func (value *U64Value) decodeNested(reader io.Reader) error {
+// DecodeNested decodes the value from the nested form
+func (value *U64Value) DecodeNested(reader io.Reader) error {
 	return decodeNestedSmallInt(reader, &value.Value, 8)
 }
 
-func (value *U64Value) decodeTopLevel(data []byte) error {
+// DecodeTopLevel decodes the value from the top-level form
+func (value *U64Value) DecodeTopLevel(data []byte) error {
 	decoded, err := decodeTopLevelUnsignedSmallInt(data, math.MaxUint64)
 	if err != nil {
 		return err
@@ -124,19 +140,23 @@ type I8Value struct {
 	Value int8
 }
 
-func (value *I8Value) encodeNested(writer io.Writer) error {
+// EncodeNested encodes the value in the nested form
+func (value *I8Value) EncodeNested(writer io.Writer) error {
 	return encodeNestedSmallInt(writer, value.Value, 1)
 }
 
-func (value *I8Value) encodeTopLevel(writer io.Writer) error {
+// EncodeTopLevel encodes the value in the top-level form
+func (value *I8Value) EncodeTopLevel(writer io.Writer) error {
 	return encodeTopLevelSignedSmallInt(writer, int64(value.Value))
 }
 
-func (value *I8Value) decodeNested(reader io.Reader) error {
+// DecodeNested decodes the value from the nested form
+func (value *I8Value) DecodeNested(reader io.Reader) error {
 	return decodeNestedSmallInt(reader, &value.Value, 1)
 }
 
-func (value *I8Value) decodeTopLevel(data []byte) error {
+// DecodeTopLevel decodes the value from the top-level form
+func (value *I8Value) DecodeTopLevel(data []byte) error {
 	decoded, err := decodeTopLevelSignedSmallInt(data, math.MaxInt8)
 	if err != nil {
 		return err
@@ -151,19 +171,23 @@ type I16Value struct {
 	Value int16
 }
 
-func (value *I16Value) encodeNested(writer io.Writer) error {
+// EncodeNested encodes the value in the nested form
+func (value *I16Value) EncodeNested(writer io.Writer) error {
 	return encodeNestedSmallInt(writer, value.Value, 2)
 }
 
-func (value *I16Value) encodeTopLevel(writer io.Writer) error {
+// EncodeTopLevel encodes the value in the top-level form
+func (value *I16Value) EncodeTopLevel(writer io.Writer) error {
 	return encodeTopLevelSignedSmallInt(writer, int64(value.Value))
 }
 
-func (value *I16Value) decodeNested(reader io.Reader) error {
+// DecodeNested decodes the value from the nested form
+func (value *I16Value) DecodeNested(reader io.Reader) error {
 	return decodeNestedSmallInt(reader, &value.Value, 2)
 }
 
-func (value *I16Value) decodeTopLevel(data []byte) error {
+// DecodeTopLevel decodes the value from the top-level form
+func (value *I16Value) DecodeTopLevel(data []byte) error {
 	decoded, err := decodeTopLevelSignedSmallInt(data, math.MaxInt16)
 	if err != nil {
 		return err
@@ -178,19 +202,23 @@ type I32Value struct {
 	Value int32
 }
 
-func (value *I32Value) encodeNested(writer io.Writer) error {
+// EncodeNested encodes the value in the nested form
+func (value *I32Value) EncodeNested(writer io.Writer) error {
 	return encodeNestedSmallInt(writer, value.Value, 4)
 }
 
-func (value *I32Value) encodeTopLevel(writer io.Writer) error {
+// EncodeTopLevel encodes the value in the top-level form
+func (value *I32Value) EncodeTopLevel(writer io.Writer) error {
 	return encodeTopLevelSignedSmallInt(writer, int64(value.Value))
 }
 
-func (value *I32Value) decodeNested(reader io.Reader) error {
+// DecodeNested decodes the value from the nested form
+func (value *I32Value) DecodeNested(reader io.Reader) error {
 	return decodeNestedSmallInt(reader, &value.Value, 4)
 }
 
-func (value *I32Value) decodeTopLevel(data []byte) error {
+// DecodeTopLevel decodes the value from the top-level form
+func (value *I32Value) DecodeTopLevel(data []byte) error {
 	decoded, err := decodeTopLevelSignedSmallInt(data, math.MaxInt32)
 	if err != nil {
 		return err
@@ -205,19 +233,23 @@ type I64Value struct {
 	Value int64
 }
 
-func (value *I64Value) encodeNested(writer io.Writer) error {
+// EncodeNested encodes the value in the nested form
+func (value *I64Value) EncodeNested(writer io.Writer) error {
 	return encodeNestedSmallInt(writer, value.Value, 8)
 }
 
-func (value *I64Value) encodeTopLevel(writer io.Writer) error {
+// EncodeTopLevel encodes the value in the top-level form
+func (value *I64Value) EncodeTopLevel(writer io.Writer) error {
 	return encodeTopLevelSignedSmallInt(writer, int64(value.Value))
 }
 
-func (value *I64Value) decodeNested(reader io.Reader) error {
+// DecodeNested decodes the value from the nested form
+func (value *I64Value) DecodeNested(reader io.Reader) error {
 	return decodeNestedSmallInt(reader, &value.Value, 8)
 }
 
-func (value *I64Value) decodeTopLevel(data []byte) error {
+// DecodeTopLevel decodes the value from the top-level form
+func (value *I64Value) DecodeTopLevel(data []byte) error {
 	decoded, err := decodeTopLevelSignedSmallInt(data, math.MaxInt64)
 	if err != nil {
 		return err

@@ -10,7 +10,8 @@ type AddressValue struct {
 	Value []byte
 }
 
-func (value *AddressValue) encodeNested(writer io.Writer) error {
+// EncodeNested encodes the value in the nested form
+func (value *AddressValue) EncodeNested(writer io.Writer) error {
 	err := value.checkPubKeyLength(value.Value)
 	if err != nil {
 		return err
@@ -20,11 +21,13 @@ func (value *AddressValue) encodeNested(writer io.Writer) error {
 	return err
 }
 
-func (value *AddressValue) encodeTopLevel(writer io.Writer) error {
-	return value.encodeNested(writer)
+// EncodeTopLevel encodes the value in the top-level form
+func (value *AddressValue) EncodeTopLevel(writer io.Writer) error {
+	return value.EncodeNested(writer)
 }
 
-func (value *AddressValue) decodeNested(reader io.Reader) error {
+// DecodeNested decodes the value from the nested form
+func (value *AddressValue) DecodeNested(reader io.Reader) error {
 	data, err := readBytesExactly(reader, pubKeyLength)
 	if err != nil {
 		return err
@@ -34,7 +37,8 @@ func (value *AddressValue) decodeNested(reader io.Reader) error {
 	return nil
 }
 
-func (value *AddressValue) decodeTopLevel(data []byte) error {
+// DecodeTopLevel decodes the value from the top-level form
+func (value *AddressValue) DecodeTopLevel(data []byte) error {
 	err := value.checkPubKeyLength(data)
 	if err != nil {
 		return err

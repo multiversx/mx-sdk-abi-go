@@ -9,7 +9,8 @@ type StringValue struct {
 	Value string
 }
 
-func (value *StringValue) encodeNested(writer io.Writer) error {
+// EncodeNested encodes the value in the nested form
+func (value *StringValue) EncodeNested(writer io.Writer) error {
 	data := []byte(value.Value)
 	err := encodeLength(writer, uint32(len(data)))
 	if err != nil {
@@ -20,12 +21,14 @@ func (value *StringValue) encodeNested(writer io.Writer) error {
 	return err
 }
 
-func (value *StringValue) encodeTopLevel(writer io.Writer) error {
+// EncodeTopLevel encodes the value in the top-level form
+func (value *StringValue) EncodeTopLevel(writer io.Writer) error {
 	_, err := writer.Write([]byte(value.Value))
 	return err
 }
 
-func (value *StringValue) decodeNested(reader io.Reader) error {
+// DecodeNested decodes the value from the nested form
+func (value *StringValue) DecodeNested(reader io.Reader) error {
 	length, err := decodeLength(reader)
 	if err != nil {
 		return err
@@ -40,7 +43,8 @@ func (value *StringValue) decodeNested(reader io.Reader) error {
 	return nil
 }
 
-func (value *StringValue) decodeTopLevel(data []byte) error {
+// DecodeTopLevel decodes the value from the top-level form
+func (value *StringValue) DecodeTopLevel(data []byte) error {
 	value.Value = string(data)
 	return nil
 }

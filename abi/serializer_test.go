@@ -459,7 +459,7 @@ func TestSerializer_InRealWorldScenarios(t *testing.T) {
 				{
 					Name: "arguments",
 					Value: &ListValue{
-						Items: []singleValue{
+						Items: []SingleValue{
 							&BytesValue{Value: []byte{0x03, 0x42}},
 							&BytesValue{Value: []byte{0x07, 0x43}},
 						},
@@ -480,7 +480,7 @@ func TestSerializer_InRealWorldScenarios(t *testing.T) {
 				{
 					Name: "tokens",
 					Value: &ListValue{
-						Items: []singleValue{
+						Items: []SingleValue{
 							createEsdtTokenPayment("beer", 0, oneQuintillion),
 							createEsdtTokenPayment("chocolate", 0, oneQuintillion),
 						},
@@ -499,7 +499,7 @@ func TestSerializer_InRealWorldScenarios(t *testing.T) {
 				{
 					Name: "arguments",
 					Value: &ListValue{
-						Items: []singleValue{
+						Items: []SingleValue{
 							&BytesValue{Value: []byte{0x03, 0x42}},
 							&BytesValue{Value: []byte{0x07, 0x43}},
 						},
@@ -546,7 +546,7 @@ func TestSerializer_InRealWorldScenarios(t *testing.T) {
 		actionGasLimit := &U64Value{}
 		actionEndpointName := &BytesValue{}
 		actionArguments := &ListValue{
-			ItemCreator: func() singleValue {
+			ItemCreator: func() SingleValue {
 				return &BytesValue{}
 			},
 		}
@@ -579,7 +579,7 @@ func TestSerializer_InRealWorldScenarios(t *testing.T) {
 		}
 
 		signers := &ListValue{
-			ItemCreator: func() singleValue {
+			ItemCreator: func() SingleValue {
 				return &AddressValue{}
 			},
 		}

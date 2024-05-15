@@ -8,11 +8,12 @@ import (
 
 // ListValue is a list of values
 type ListValue struct {
-	Items       []singleValue
-	ItemCreator func() singleValue
+	Items       []SingleValue
+	ItemCreator func() SingleValue
 }
 
-func (value *ListValue) encodeNested(writer io.Writer) error {
+// EncodeNested encodes the value in the nested form
+func (value *ListValue) EncodeNested(writer io.Writer) error {
 	err := encodeLength(writer, uint32(len(value.Items)))
 	if err != nil {
 		return err
@@ -21,13 +22,15 @@ func (value *ListValue) encodeNested(writer io.Writer) error {
 	return value.encodeItems(writer)
 }
 
-func (value *ListValue) encodeTopLevel(writer io.Writer) error {
+// EncodeTopLevel encodes the value in the top-level form
+func (value *ListValue) EncodeTopLevel(writer io.Writer) error {
 	return value.encodeItems(writer)
 }
 
+// DecodeNested decodes the value from the nested form
 func (value *ListValue) encodeItems(writer io.Writer) error {
 	for _, item := range value.Items {
-		err := item.encodeNested(writer)
+		err := item.EncodeNested(writer)
 		if err != nil {
 			return err
 		}
@@ -36,7 +39,8 @@ func (value *ListValue) encodeItems(writer io.Writer) error {
 	return nil
 }
 
-func (value *ListValue) decodeNested(reader io.Reader) error {
+// DecodeNested decodes the value from the nested form
+func (value *ListValue) DecodeNested(reader io.Reader) error {
 	if value.ItemCreator == nil {
 		return errors.New("cannot decode list: item creator is nil")
 	}
@@ -46,7 +50,7 @@ func (value *ListValue) decodeNested(reader io.Reader) error {
 		return err
 	}
 
-	value.Items = make([]singleValue, 0, length)
+	value.Items = make([]SingleValue, 0, length)
 
 	for i := uint32(0); i < length; i++ {
 		err := value.decodeItem(reader)
@@ -58,13 +62,14 @@ func (value *ListValue) decodeNested(reader io.Reader) error {
 	return nil
 }
 
-func (value *ListValue) decodeTopLevel(data []byte) error {
+// DecodeTopLevel decodes the value from the top-level form
+func (value *ListValue) DecodeTopLevel(data []byte) error {
 	if value.ItemCreator == nil {
 		return errors.New("cannot decode list: item creator is nil")
 	}
 
 	reader := bytes.NewReader(data)
-	value.Items = make([]singleValue, 0)
+	value.Items = make([]SingleValue, 0)
 
 	for reader.Len() > 0 {
 		err := value.decodeItem(reader)
@@ -79,7 +84,7 @@ func (value *ListValue) decodeTopLevel(data []byte) error {
 func (value *ListValue) decodeItem(reader io.Reader) error {
 	newItem := value.ItemCreator()
 
-	err := newItem.decodeNested(reader)
+	err := newItem.DecodeNested(reader)
 	if err != nil {
 		return err
 	}
