@@ -5,15 +5,229 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
+	"math"
 	"math/big"
 
 	twos "github.com/multiversx/mx-components-big-int/twos-complement"
 )
 
-type codecForSmallInt struct {
+// U8Value is a wrapper for uint8
+type U8Value struct {
+	Value uint8
 }
 
-func (c *codecForSmallInt) encodeNested(writer io.Writer, value any, numBytes int) error {
+func (value *U8Value) encodeNested(writer io.Writer) error {
+	return encodeNestedSmallInt(writer, value.Value, 1)
+}
+
+func (value *U8Value) encodeTopLevel(writer io.Writer) error {
+	return encodeTopLevelUnsignedSmallInt(writer, uint64(value.Value))
+}
+
+func (value *U8Value) decodeNested(reader io.Reader) error {
+	return decodeNestedSmallInt(reader, &value.Value, 1)
+}
+
+func (value *U8Value) decodeTopLevel(data []byte) error {
+	decoded, err := decodeTopLevelUnsignedSmallInt(data, math.MaxUint8)
+	if err != nil {
+		return err
+	}
+
+	value.Value = uint8(decoded)
+	return nil
+}
+
+// U16Value is a wrapper for uint16
+type U16Value struct {
+	Value uint16
+}
+
+func (value *U16Value) encodeNested(writer io.Writer) error {
+	return encodeNestedSmallInt(writer, value.Value, 2)
+}
+
+func (value *U16Value) encodeTopLevel(writer io.Writer) error {
+	return encodeTopLevelUnsignedSmallInt(writer, uint64(value.Value))
+}
+
+func (value *U16Value) decodeNested(reader io.Reader) error {
+	return decodeNestedSmallInt(reader, &value.Value, 2)
+}
+
+func (value *U16Value) decodeTopLevel(data []byte) error {
+	decoded, err := decodeTopLevelUnsignedSmallInt(data, math.MaxUint16)
+	if err != nil {
+		return err
+	}
+
+	value.Value = uint16(decoded)
+	return nil
+}
+
+// U32Value is a wrapper for uint16
+type U32Value struct {
+	Value uint32
+}
+
+func (value *U32Value) encodeNested(writer io.Writer) error {
+	return encodeNestedSmallInt(writer, value.Value, 4)
+}
+
+func (value *U32Value) encodeTopLevel(writer io.Writer) error {
+	return encodeTopLevelUnsignedSmallInt(writer, uint64(value.Value))
+}
+
+func (value *U32Value) decodeNested(reader io.Reader) error {
+	return decodeNestedSmallInt(reader, &value.Value, 4)
+}
+
+func (value *U32Value) decodeTopLevel(data []byte) error {
+	decoded, err := decodeTopLevelUnsignedSmallInt(data, math.MaxUint32)
+	if err != nil {
+		return err
+	}
+
+	value.Value = uint32(decoded)
+	return nil
+}
+
+// U64Value is a wrapper for uint16
+type U64Value struct {
+	Value uint64
+}
+
+func (value *U64Value) encodeNested(writer io.Writer) error {
+	return encodeNestedSmallInt(writer, value.Value, 8)
+}
+
+func (value *U64Value) encodeTopLevel(writer io.Writer) error {
+	return encodeTopLevelUnsignedSmallInt(writer, uint64(value.Value))
+}
+
+func (value *U64Value) decodeNested(reader io.Reader) error {
+	return decodeNestedSmallInt(reader, &value.Value, 8)
+}
+
+func (value *U64Value) decodeTopLevel(data []byte) error {
+	decoded, err := decodeTopLevelUnsignedSmallInt(data, math.MaxUint64)
+	if err != nil {
+		return err
+	}
+
+	value.Value = uint64(decoded)
+	return nil
+}
+
+// I8Value is a wrapper for uint8
+type I8Value struct {
+	Value int8
+}
+
+func (value *I8Value) encodeNested(writer io.Writer) error {
+	return encodeNestedSmallInt(writer, value.Value, 1)
+}
+
+func (value *I8Value) encodeTopLevel(writer io.Writer) error {
+	return encodeTopLevelSignedSmallInt(writer, int64(value.Value))
+}
+
+func (value *I8Value) decodeNested(reader io.Reader) error {
+	return decodeNestedSmallInt(reader, &value.Value, 1)
+}
+
+func (value *I8Value) decodeTopLevel(data []byte) error {
+	decoded, err := decodeTopLevelSignedSmallInt(data, math.MaxInt8)
+	if err != nil {
+		return err
+	}
+
+	value.Value = int8(decoded)
+	return nil
+}
+
+// I16Value is a wrapper for uint16
+type I16Value struct {
+	Value int16
+}
+
+func (value *I16Value) encodeNested(writer io.Writer) error {
+	return encodeNestedSmallInt(writer, value.Value, 2)
+}
+
+func (value *I16Value) encodeTopLevel(writer io.Writer) error {
+	return encodeTopLevelSignedSmallInt(writer, int64(value.Value))
+}
+
+func (value *I16Value) decodeNested(reader io.Reader) error {
+	return decodeNestedSmallInt(reader, &value.Value, 2)
+}
+
+func (value *I16Value) decodeTopLevel(data []byte) error {
+	decoded, err := decodeTopLevelSignedSmallInt(data, math.MaxInt16)
+	if err != nil {
+		return err
+	}
+
+	value.Value = int16(decoded)
+	return nil
+}
+
+// I32Value is a wrapper for uint16
+type I32Value struct {
+	Value int32
+}
+
+func (value *I32Value) encodeNested(writer io.Writer) error {
+	return encodeNestedSmallInt(writer, value.Value, 4)
+}
+
+func (value *I32Value) encodeTopLevel(writer io.Writer) error {
+	return encodeTopLevelSignedSmallInt(writer, int64(value.Value))
+}
+
+func (value *I32Value) decodeNested(reader io.Reader) error {
+	return decodeNestedSmallInt(reader, &value.Value, 4)
+}
+
+func (value *I32Value) decodeTopLevel(data []byte) error {
+	decoded, err := decodeTopLevelSignedSmallInt(data, math.MaxInt32)
+	if err != nil {
+		return err
+	}
+
+	value.Value = int32(decoded)
+	return nil
+}
+
+// I64Value is a wrapper for uint16
+type I64Value struct {
+	Value int64
+}
+
+func (value *I64Value) encodeNested(writer io.Writer) error {
+	return encodeNestedSmallInt(writer, value.Value, 8)
+}
+
+func (value *I64Value) encodeTopLevel(writer io.Writer) error {
+	return encodeTopLevelSignedSmallInt(writer, int64(value.Value))
+}
+
+func (value *I64Value) decodeNested(reader io.Reader) error {
+	return decodeNestedSmallInt(reader, &value.Value, 8)
+}
+
+func (value *I64Value) decodeTopLevel(data []byte) error {
+	decoded, err := decodeTopLevelSignedSmallInt(data, math.MaxInt64)
+	if err != nil {
+		return err
+	}
+
+	value.Value = int64(decoded)
+	return nil
+}
+
+func encodeNestedSmallInt(writer io.Writer, value any, numBytes int) error {
 	buffer := new(bytes.Buffer)
 
 	err := binary.Write(buffer, binary.BigEndian, value)
@@ -34,20 +248,20 @@ func (c *codecForSmallInt) encodeNested(writer io.Writer, value any, numBytes in
 	return nil
 }
 
-func (c *codecForSmallInt) encodeTopLevelUnsigned(writer io.Writer, value uint64) error {
+func encodeTopLevelUnsignedSmallInt(writer io.Writer, value uint64) error {
 	b := big.NewInt(0).SetUint64(value)
 	data := b.Bytes()
 	_, err := writer.Write(data)
 	return err
 }
 
-func (c *codecForSmallInt) encodeTopLevelSigned(writer io.Writer, value int64) error {
+func encodeTopLevelSignedSmallInt(writer io.Writer, value int64) error {
 	data := twos.ToBytes(big.NewInt(value))
 	_, err := writer.Write(data)
 	return err
 }
 
-func (c *codecForSmallInt) decodeNested(reader io.Reader, value any, numBytes int) error {
+func decodeNestedSmallInt(reader io.Reader, value any, numBytes int) error {
 	data, err := readBytesExactly(reader, numBytes)
 	if err != nil {
 		return err
@@ -62,7 +276,7 @@ func (c *codecForSmallInt) decodeNested(reader io.Reader, value any, numBytes in
 	return nil
 }
 
-func (c *codecForSmallInt) decodeTopLevelUnsigned(data []byte, maxValue uint64) (uint64, error) {
+func decodeTopLevelUnsignedSmallInt(data []byte, maxValue uint64) (uint64, error) {
 	b := big.NewInt(0).SetBytes(data)
 	if !b.IsUint64() {
 		return 0, fmt.Errorf("decoded value is too large or invalid: %s", b)
@@ -76,7 +290,7 @@ func (c *codecForSmallInt) decodeTopLevelUnsigned(data []byte, maxValue uint64) 
 	return n, nil
 }
 
-func (c *codecForSmallInt) decodeTopLevelSigned(data []byte, maxValue int64) (int64, error) {
+func decodeTopLevelSignedSmallInt(data []byte, maxValue int64) (int64, error) {
 	b := twos.FromBytes(data)
 
 	if !b.IsInt64() {
