@@ -68,7 +68,7 @@ func (s *serializer) doSerialize(partsHolder *partsHolder, inputValues []any) er
 		}
 
 		switch value := value.(type) {
-		case *InputOptionalValue:
+		case *OptionalValue:
 			if i != len(inputValues)-1 {
 				// Usage of multiple optional values is not recommended:
 				// https://docs.multiversx.com/developers/data/multi-values
@@ -76,15 +76,15 @@ func (s *serializer) doSerialize(partsHolder *partsHolder, inputValues []any) er
 				return errors.New("an optional value must be last among input values")
 			}
 
-			err = s.serializeInputOptionalValue(partsHolder, value)
-		case *InputMultiValue:
-			err = s.serializeInputMultiValue(partsHolder, value)
-		case *InputVariadicValues:
+			err = s.serializeOptionalValue(partsHolder, value)
+		case *MultiValue:
+			err = s.serializeMultiValue(partsHolder, value)
+		case *VariadicValues:
 			if i != len(inputValues)-1 {
 				return errors.New("variadic values must be last among input values")
 			}
 
-			err = s.serializeInputVariadicValues(partsHolder, value)
+			err = s.serializeVariadicValues(partsHolder, value)
 		case SingleValue:
 			partsHolder.appendEmptyPart()
 			err = s.serializeSingleValue(partsHolder, value)
@@ -130,7 +130,7 @@ func (s *serializer) doDeserialize(partsHolder *partsHolder, outputValues []any)
 		}
 
 		switch value := value.(type) {
-		case *OutputOptionalValue:
+		case *OptionalValue:
 			if i != len(outputValues)-1 {
 				// Usage of multiple optional values is not recommended:
 				// https://docs.multiversx.com/developers/data/multi-values
@@ -138,15 +138,15 @@ func (s *serializer) doDeserialize(partsHolder *partsHolder, outputValues []any)
 				return errors.New("an optional value must be last among output values")
 			}
 
-			err = s.deserializeOutputOptionalValue(partsHolder, value)
-		case *OutputMultiValue:
-			err = s.deserializeOutputMultiValue(partsHolder, value)
-		case *OutputVariadicValues:
+			err = s.deserializeOptionalValue(partsHolder, value)
+		case *MultiValue:
+			err = s.deserializeMultiValue(partsHolder, value)
+		case *VariadicValues:
 			if i != len(outputValues)-1 {
 				return errors.New("variadic values must be last among output values")
 			}
 
-			err = s.deserializeOutputVariadicValues(partsHolder, value)
+			err = s.deserializeVariadicValues(partsHolder, value)
 		case SingleValue:
 			err = s.deserializeSingleValue(partsHolder, value)
 		default:
@@ -161,7 +161,7 @@ func (s *serializer) doDeserialize(partsHolder *partsHolder, outputValues []any)
 	return nil
 }
 
-func (s *serializer) serializeInputOptionalValue(partsHolder *partsHolder, value *InputOptionalValue) error {
+func (s *serializer) serializeOptionalValue(partsHolder *partsHolder, value *OptionalValue) error {
 	if value.Value == nil {
 		return nil
 	}
@@ -169,7 +169,7 @@ func (s *serializer) serializeInputOptionalValue(partsHolder *partsHolder, value
 	return s.doSerialize(partsHolder, []any{value.Value})
 }
 
-func (s *serializer) serializeInputMultiValue(partsHolder *partsHolder, value *InputMultiValue) error {
+func (s *serializer) serializeMultiValue(partsHolder *partsHolder, value *MultiValue) error {
 	for _, item := range value.Items {
 		err := s.doSerialize(partsHolder, []any{item})
 		if err != nil {
@@ -180,7 +180,7 @@ func (s *serializer) serializeInputMultiValue(partsHolder *partsHolder, value *I
 	return nil
 }
 
-func (s *serializer) serializeInputVariadicValues(partsHolder *partsHolder, value *InputVariadicValues) error {
+func (s *serializer) serializeVariadicValues(partsHolder *partsHolder, value *VariadicValues) error {
 	for _, item := range value.Items {
 		err := s.doSerialize(partsHolder, []any{item})
 		if err != nil {
@@ -200,7 +200,7 @@ func (s *serializer) serializeSingleValue(partsHolder *partsHolder, value Single
 	return partsHolder.appendToLastPart(data)
 }
 
-func (s *serializer) deserializeOutputOptionalValue(partsHolder *partsHolder, value *OutputOptionalValue) error {
+func (s *serializer) deserializeOptionalValue(partsHolder *partsHolder, value *OptionalValue) error {
 	for partsHolder.isFocusedBeyondLastPart() {
 		value.Value = nil
 		return nil
@@ -214,7 +214,7 @@ func (s *serializer) deserializeOutputOptionalValue(partsHolder *partsHolder, va
 	return nil
 }
 
-func (s *serializer) deserializeOutputMultiValue(partsHolder *partsHolder, value *OutputMultiValue) error {
+func (s *serializer) deserializeMultiValue(partsHolder *partsHolder, value *MultiValue) error {
 	for _, item := range value.Items {
 		err := s.doDeserialize(partsHolder, []any{item})
 		if err != nil {
@@ -225,7 +225,7 @@ func (s *serializer) deserializeOutputMultiValue(partsHolder *partsHolder, value
 	return nil
 }
 
-func (s *serializer) deserializeOutputVariadicValues(partsHolder *partsHolder, value *OutputVariadicValues) error {
+func (s *serializer) deserializeVariadicValues(partsHolder *partsHolder, value *VariadicValues) error {
 	if value.ItemCreator == nil {
 		return errors.New("cannot deserialize variadic values: item creator is nil")
 	}

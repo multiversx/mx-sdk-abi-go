@@ -47,7 +47,7 @@ func TestSerializer_Serialize(t *testing.T) {
 	t.Run("optional (missing)", func(t *testing.T) {
 		data, err := serializer.Serialize([]any{
 			&U8Value{Value: 0x42},
-			&InputOptionalValue{},
+			&OptionalValue{},
 		})
 
 		require.NoError(t, err)
@@ -57,7 +57,7 @@ func TestSerializer_Serialize(t *testing.T) {
 	t.Run("optional (provided)", func(t *testing.T) {
 		data, err := serializer.Serialize([]any{
 			&U8Value{Value: 0x42},
-			&InputOptionalValue{Value: &U8Value{Value: 0x43}},
+			&OptionalValue{Value: &U8Value{Value: 0x43}},
 		})
 
 		require.NoError(t, err)
@@ -66,7 +66,7 @@ func TestSerializer_Serialize(t *testing.T) {
 
 	t.Run("optional: should err because optional must be last", func(t *testing.T) {
 		_, err := serializer.Serialize([]any{
-			&InputOptionalValue{Value: 0x42},
+			&OptionalValue{Value: 0x42},
 			&U8Value{Value: 0x43},
 		})
 
@@ -75,7 +75,7 @@ func TestSerializer_Serialize(t *testing.T) {
 
 	t.Run("multi<u8, u16, u32>", func(t *testing.T) {
 		data, err := serializer.Serialize([]any{
-			&InputMultiValue{
+			&MultiValue{
 				Items: []any{
 					&U8Value{Value: 0x42},
 					&U16Value{Value: 0x4243},
@@ -91,7 +91,7 @@ func TestSerializer_Serialize(t *testing.T) {
 	t.Run("u8, multi<u8, u16, u32>", func(t *testing.T) {
 		data, err := serializer.Serialize([]any{
 			&U8Value{Value: 0x42},
-			&InputMultiValue{
+			&MultiValue{
 				Items: []any{
 					&U8Value{Value: 0x42},
 					&U16Value{Value: 0x4243},
@@ -106,15 +106,15 @@ func TestSerializer_Serialize(t *testing.T) {
 
 	t.Run("multi<multi<u8, u16>, multi<u8, u16>>", func(t *testing.T) {
 		data, err := serializer.Serialize([]any{
-			&InputMultiValue{
+			&MultiValue{
 				Items: []any{
-					&InputMultiValue{
+					&MultiValue{
 						Items: []any{
 							&U8Value{Value: 0x42},
 							&U16Value{Value: 0x4243},
 						},
 					},
-					&InputMultiValue{
+					&MultiValue{
 						Items: []any{
 							&U8Value{Value: 0x44},
 							&U16Value{Value: 0x4445},
@@ -130,7 +130,7 @@ func TestSerializer_Serialize(t *testing.T) {
 
 	t.Run("variadic, of different types", func(t *testing.T) {
 		data, err := serializer.Serialize([]any{
-			&InputVariadicValues{
+			&VariadicValues{
 				Items: []any{
 					&U8Value{Value: 0x42},
 					&U16Value{Value: 0x4243},
@@ -147,7 +147,7 @@ func TestSerializer_Serialize(t *testing.T) {
 
 	t.Run("variadic<u8>, u8: should err because variadic must be last", func(t *testing.T) {
 		_, err := serializer.Serialize([]any{
-			&InputVariadicValues{
+			&VariadicValues{
 				Items: []any{
 					&U8Value{Value: 0x42},
 					&U8Value{Value: 0x43},
@@ -162,7 +162,7 @@ func TestSerializer_Serialize(t *testing.T) {
 	t.Run("u8, variadic<u8>", func(t *testing.T) {
 		data, err := serializer.Serialize([]any{
 			&U8Value{Value: 0x41},
-			&InputVariadicValues{
+			&VariadicValues{
 				Items: []any{
 					&U8Value{Value: 0x42},
 					&U8Value{Value: 0x43},
@@ -231,7 +231,7 @@ func TestSerializer_Deserialize(t *testing.T) {
 	t.Run("optional (missing)", func(t *testing.T) {
 		outputValues := []any{
 			&U8Value{},
-			&OutputOptionalValue{},
+			&OptionalValue{},
 		}
 
 		err := serializer.Deserialize("42", outputValues)
@@ -239,14 +239,14 @@ func TestSerializer_Deserialize(t *testing.T) {
 		require.Nil(t, err)
 		require.Equal(t, []any{
 			&U8Value{Value: 0x42},
-			&OutputOptionalValue{},
+			&OptionalValue{},
 		}, outputValues)
 	})
 
 	t.Run("optional (provided)", func(t *testing.T) {
 		outputValues := []any{
 			&U8Value{},
-			&OutputOptionalValue{Value: &U8Value{}},
+			&OptionalValue{Value: &U8Value{}},
 		}
 
 		err := serializer.Deserialize("42@43", outputValues)
@@ -254,13 +254,13 @@ func TestSerializer_Deserialize(t *testing.T) {
 		require.Nil(t, err)
 		require.Equal(t, []any{
 			&U8Value{Value: 0x42},
-			&OutputOptionalValue{Value: &U8Value{Value: 0x43}},
+			&OptionalValue{Value: &U8Value{Value: 0x43}},
 		}, outputValues)
 	})
 
 	t.Run("optional: should err because optional must be last", func(t *testing.T) {
 		outputValues := []any{
-			&OutputOptionalValue{Value: &U8Value{}},
+			&OptionalValue{Value: &U8Value{}},
 			&U8Value{},
 		}
 
@@ -270,7 +270,7 @@ func TestSerializer_Deserialize(t *testing.T) {
 
 	t.Run("multi<u8, u16, u32>", func(t *testing.T) {
 		outputValues := []any{
-			&OutputMultiValue{
+			&MultiValue{
 				Items: []any{
 					&U8Value{},
 					&U16Value{},
@@ -283,7 +283,7 @@ func TestSerializer_Deserialize(t *testing.T) {
 
 		require.Nil(t, err)
 		require.Equal(t, []any{
-			&OutputMultiValue{
+			&MultiValue{
 				Items: []any{
 					&U8Value{Value: 0x42},
 					&U16Value{Value: 0x4243},
@@ -296,7 +296,7 @@ func TestSerializer_Deserialize(t *testing.T) {
 	t.Run("u8, multi<u8, u16, u32>", func(t *testing.T) {
 		outputValues := []any{
 			&U8Value{},
-			&OutputMultiValue{
+			&MultiValue{
 				Items: []any{
 					&U8Value{},
 					&U16Value{},
@@ -310,7 +310,7 @@ func TestSerializer_Deserialize(t *testing.T) {
 		require.Nil(t, err)
 		require.Equal(t, []any{
 			&U8Value{Value: 0x42},
-			&OutputMultiValue{
+			&MultiValue{
 				Items: []any{
 					&U8Value{Value: 0x42},
 					&U16Value{Value: 0x4243},
@@ -321,7 +321,7 @@ func TestSerializer_Deserialize(t *testing.T) {
 	})
 
 	t.Run("variadic, should err because of nil item creator", func(t *testing.T) {
-		destination := &OutputVariadicValues{
+		destination := &VariadicValues{
 			Items: []any{},
 		}
 
@@ -330,7 +330,7 @@ func TestSerializer_Deserialize(t *testing.T) {
 	})
 
 	t.Run("empty: u8", func(t *testing.T) {
-		destination := &OutputVariadicValues{
+		destination := &VariadicValues{
 			Items:       []any{},
 			ItemCreator: func() any { return &U8Value{} },
 		}
@@ -341,7 +341,7 @@ func TestSerializer_Deserialize(t *testing.T) {
 	})
 
 	t.Run("variadic<u8>", func(t *testing.T) {
-		destination := &OutputVariadicValues{
+		destination := &VariadicValues{
 			Items:       []any{},
 			ItemCreator: func() any { return &U8Value{} },
 		}
@@ -357,7 +357,7 @@ func TestSerializer_Deserialize(t *testing.T) {
 	})
 
 	t.Run("varidic<u8>, with empty items", func(t *testing.T) {
-		destination := &OutputVariadicValues{
+		destination := &VariadicValues{
 			Items:       []any{},
 			ItemCreator: func() any { return &U8Value{} },
 		}
@@ -374,7 +374,7 @@ func TestSerializer_Deserialize(t *testing.T) {
 	})
 
 	t.Run("varidic<u32>", func(t *testing.T) {
-		destination := &OutputVariadicValues{
+		destination := &VariadicValues{
 			Items:       []any{},
 			ItemCreator: func() any { return &U32Value{} },
 		}
@@ -389,7 +389,7 @@ func TestSerializer_Deserialize(t *testing.T) {
 	})
 
 	t.Run("varidic<u8>, should err because decoded value is too large", func(t *testing.T) {
-		destination := &OutputVariadicValues{
+		destination := &VariadicValues{
 			Items:       []any{},
 			ItemCreator: func() any { return &U8Value{} },
 		}
@@ -584,7 +584,7 @@ func TestSerializer_InRealWorldScenarios(t *testing.T) {
 			},
 		}
 
-		destination := &OutputVariadicValues{
+		destination := &VariadicValues{
 			ItemCreator: func() any {
 				return &StructValue{
 					Fields: []Field{
