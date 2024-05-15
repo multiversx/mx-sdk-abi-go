@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestCodecForBigInt(t *testing.T) {
+func TestBigIntValues(t *testing.T) {
 	codec, _ := newCodec(argsNewCodec{
 		pubKeyLength: 32,
 	})
