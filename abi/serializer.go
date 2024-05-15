@@ -3,6 +3,7 @@ package abi
 import (
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"strings"
 )
 
@@ -67,7 +68,7 @@ func (s *serializer) doSerialize(partsHolder *partsHolder, inputValues []any) er
 		}
 
 		switch value := value.(type) {
-		case InputOptionalValue:
+		case *InputOptionalValue:
 			if i != len(inputValues)-1 {
 				// Usage of multiple optional values is not recommended:
 				// https://docs.multiversx.com/developers/data/multi-values
@@ -76,22 +77,19 @@ func (s *serializer) doSerialize(partsHolder *partsHolder, inputValues []any) er
 			}
 
 			err = s.serializeInputOptionalValue(partsHolder, value)
-		case InputMultiValue:
+		case *InputMultiValue:
 			err = s.serializeInputMultiValue(partsHolder, value)
-		case InputVariadicValues:
+		case *InputVariadicValues:
 			if i != len(inputValues)-1 {
 				return errors.New("variadic values must be last among input values")
 			}
 
 			err = s.serializeInputVariadicValues(partsHolder, value)
-		default:
-			valueAsSingleValue, ok := value.(singleValue)
-			if !ok {
-				return errors.New("cannot serialize value: it must be a 'single value'")
-			}
-
+		case singleValue:
 			partsHolder.appendEmptyPart()
-			err = s.serializeSingleValue(partsHolder, valueAsSingleValue)
+			err = s.serializeSingleValue(partsHolder, value)
+		default:
+			return fmt.Errorf("unsupported type for serialization: %T", value)
 		}
 
 		if err != nil {
@@ -149,13 +147,10 @@ func (s *serializer) doDeserialize(partsHolder *partsHolder, outputValues []any)
 			}
 
 			err = s.deserializeOutputVariadicValues(partsHolder, value)
+		case singleValue:
+			err = s.deserializeSingleValue(partsHolder, value)
 		default:
-			valueAsSingleValue, ok := value.(singleValue)
-			if !ok {
-				return errors.New("cannot deserialize into value: it must be a 'single value'")
-			}
-
-			err = s.deserializeSingleValue(partsHolder, valueAsSingleValue)
+			return fmt.Errorf("unsupported type for deserialization: %T", value)
 		}
 
 		if err != nil {
@@ -166,7 +161,7 @@ func (s *serializer) doDeserialize(partsHolder *partsHolder, outputValues []any)
 	return nil
 }
 
-func (s *serializer) serializeInputOptionalValue(partsHolder *partsHolder, value InputOptionalValue) error {
+func (s *serializer) serializeInputOptionalValue(partsHolder *partsHolder, value *InputOptionalValue) error {
 	if value.Value == nil {
 		return nil
 	}
@@ -174,7 +169,7 @@ func (s *serializer) serializeInputOptionalValue(partsHolder *partsHolder, value
 	return s.doSerialize(partsHolder, []any{value.Value})
 }
 
-func (s *serializer) serializeInputMultiValue(partsHolder *partsHolder, value InputMultiValue) error {
+func (s *serializer) serializeInputMultiValue(partsHolder *partsHolder, value *InputMultiValue) error {
 	for _, item := range value.Items {
 		err := s.doSerialize(partsHolder, []any{item})
 		if err != nil {
@@ -185,7 +180,7 @@ func (s *serializer) serializeInputMultiValue(partsHolder *partsHolder, value In
 	return nil
 }
 
-func (s *serializer) serializeInputVariadicValues(partsHolder *partsHolder, value InputVariadicValues) error {
+func (s *serializer) serializeInputVariadicValues(partsHolder *partsHolder, value *InputVariadicValues) error {
 	for _, item := range value.Items {
 		err := s.doSerialize(partsHolder, []any{item})
 		if err != nil {

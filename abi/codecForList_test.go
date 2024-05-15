@@ -47,7 +47,7 @@ func TestListValue(t *testing.T) {
 		err := codec.DecodeNested(data, destination)
 		require.NoError(t, err)
 		require.Equal(t,
-			[]any{
+			[]singleValue{
 				&U16Value{Value: 1},
 				&U16Value{Value: 2},
 				&U16Value{Value: 3},
@@ -67,7 +67,7 @@ func TestListValue(t *testing.T) {
 		err := codec.DecodeTopLevel(data, destination)
 		require.NoError(t, err)
 		require.Equal(t,
-			[]any{
+			[]singleValue{
 				&U16Value{Value: 1},
 				&U16Value{Value: 2},
 				&U16Value{Value: 3},

@@ -18,7 +18,7 @@ func TestSerializer_Serialize(t *testing.T) {
 
 	t.Run("u8", func(t *testing.T) {
 		data, err := serializer.Serialize([]any{
-			U8Value{Value: 0x42},
+			&U8Value{Value: 0x42},
 		})
 
 		require.NoError(t, err)
@@ -27,7 +27,7 @@ func TestSerializer_Serialize(t *testing.T) {
 
 	t.Run("u16", func(t *testing.T) {
 		data, err := serializer.Serialize([]any{
-			U16Value{Value: 0x4243},
+			&U16Value{Value: 0x4243},
 		})
 
 		require.NoError(t, err)
@@ -36,8 +36,8 @@ func TestSerializer_Serialize(t *testing.T) {
 
 	t.Run("u8, u16", func(t *testing.T) {
 		data, err := serializer.Serialize([]any{
-			U8Value{Value: 0x42},
-			U16Value{Value: 0x4243},
+			&U8Value{Value: 0x42},
+			&U16Value{Value: 0x4243},
 		})
 
 		require.NoError(t, err)
@@ -46,8 +46,8 @@ func TestSerializer_Serialize(t *testing.T) {
 
 	t.Run("optional (missing)", func(t *testing.T) {
 		data, err := serializer.Serialize([]any{
-			U8Value{Value: 0x42},
-			InputOptionalValue{},
+			&U8Value{Value: 0x42},
+			&InputOptionalValue{},
 		})
 
 		require.NoError(t, err)
@@ -56,8 +56,8 @@ func TestSerializer_Serialize(t *testing.T) {
 
 	t.Run("optional (provided)", func(t *testing.T) {
 		data, err := serializer.Serialize([]any{
-			U8Value{Value: 0x42},
-			InputOptionalValue{Value: U8Value{Value: 0x43}},
+			&U8Value{Value: 0x42},
+			&InputOptionalValue{Value: &U8Value{Value: 0x43}},
 		})
 
 		require.NoError(t, err)
@@ -66,8 +66,8 @@ func TestSerializer_Serialize(t *testing.T) {
 
 	t.Run("optional: should err because optional must be last", func(t *testing.T) {
 		_, err := serializer.Serialize([]any{
-			InputOptionalValue{Value: 0x42},
-			U8Value{Value: 0x43},
+			&InputOptionalValue{Value: 0x42},
+			&U8Value{Value: 0x43},
 		})
 
 		require.ErrorContains(t, err, "an optional value must be last among input values")
@@ -75,11 +75,11 @@ func TestSerializer_Serialize(t *testing.T) {
 
 	t.Run("multi<u8, u16, u32>", func(t *testing.T) {
 		data, err := serializer.Serialize([]any{
-			InputMultiValue{
+			&InputMultiValue{
 				Items: []any{
-					U8Value{Value: 0x42},
-					U16Value{Value: 0x4243},
-					U32Value{Value: 0x42434445},
+					&U8Value{Value: 0x42},
+					&U16Value{Value: 0x4243},
+					&U32Value{Value: 0x42434445},
 				},
 			},
 		})
@@ -90,12 +90,12 @@ func TestSerializer_Serialize(t *testing.T) {
 
 	t.Run("u8, multi<u8, u16, u32>", func(t *testing.T) {
 		data, err := serializer.Serialize([]any{
-			U8Value{Value: 0x42},
-			InputMultiValue{
+			&U8Value{Value: 0x42},
+			&InputMultiValue{
 				Items: []any{
-					U8Value{Value: 0x42},
-					U16Value{Value: 0x4243},
-					U32Value{Value: 0x42434445},
+					&U8Value{Value: 0x42},
+					&U16Value{Value: 0x4243},
+					&U32Value{Value: 0x42434445},
 				},
 			},
 		})
@@ -130,10 +130,10 @@ func TestSerializer_Serialize(t *testing.T) {
 
 	t.Run("variadic, of different types", func(t *testing.T) {
 		data, err := serializer.Serialize([]any{
-			InputVariadicValues{
+			&InputVariadicValues{
 				Items: []any{
-					U8Value{Value: 0x42},
-					U16Value{Value: 0x4243},
+					&U8Value{Value: 0x42},
+					&U16Value{Value: 0x4243},
 				},
 			},
 		})
@@ -147,13 +147,13 @@ func TestSerializer_Serialize(t *testing.T) {
 
 	t.Run("variadic<u8>, u8: should err because variadic must be last", func(t *testing.T) {
 		_, err := serializer.Serialize([]any{
-			InputVariadicValues{
+			&InputVariadicValues{
 				Items: []any{
-					U8Value{Value: 0x42},
-					U8Value{Value: 0x43},
+					&U8Value{Value: 0x42},
+					&U8Value{Value: 0x43},
 				},
 			},
-			U8Value{Value: 0x44},
+			&U8Value{Value: 0x44},
 		})
 
 		require.ErrorContains(t, err, "variadic values must be last among input values")
@@ -434,7 +434,7 @@ func TestSerializer_InRealWorldScenarios(t *testing.T) {
 		}
 
 		// First action: SendTransferExecuteEgld
-		firstAction := EnumValue{
+		firstAction := &EnumValue{
 			Discriminant: 5,
 			// CallActionData
 			Fields: []Field{
@@ -469,7 +469,7 @@ func TestSerializer_InRealWorldScenarios(t *testing.T) {
 		}
 
 		// Second action: SendTransferExecuteEsdt
-		secondAction := EnumValue{
+		secondAction := &EnumValue{
 			Discriminant: 6,
 			// EsdtTransferExecuteData
 			Fields: []Field{
