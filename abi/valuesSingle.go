@@ -1,7 +1,5 @@
 package abi
 
-import "math/big"
-
 // U8Value is a wrapper for uint8
 type U8Value struct {
 	Value uint8
@@ -40,36 +38,6 @@ type I32Value struct {
 // I64Value is a wrapper for int64
 type I64Value struct {
 	Value int64
-}
-
-// BigUIntValue is a wrapper for a big integer (unsigned)
-type BigUIntValue struct {
-	Value *big.Int
-}
-
-// BigIntValue is a wrapper for a big integer (signed)
-type BigIntValue struct {
-	Value *big.Int
-}
-
-// AddressValue is a wrapper for an address
-type AddressValue struct {
-	Value []byte
-}
-
-// BytesValue is a wrapper for a byte slice
-type BytesValue struct {
-	Value []byte
-}
-
-// StringValue is a wrapper for a string
-type StringValue struct {
-	Value string
-}
-
-// BoolValue is a wrapper for a boolean
-type BoolValue struct {
-	Value bool
 }
 
 // OptionValue is a wrapper for an option value

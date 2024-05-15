@@ -4,10 +4,12 @@ import (
 	"io"
 )
 
-type codecForBytes struct {
+// BytesValue is a wrapper for a byte slice
+type BytesValue struct {
+	Value []byte
 }
 
-func (c *codecForBytes) encodeNested(writer io.Writer, value BytesValue) error {
+func (value *BytesValue) encodeNested(writer io.Writer) error {
 	err := encodeLength(writer, uint32(len(value.Value)))
 	if err != nil {
 		return err
@@ -17,12 +19,12 @@ func (c *codecForBytes) encodeNested(writer io.Writer, value BytesValue) error {
 	return err
 }
 
-func (c *codecForBytes) encodeTopLevel(writer io.Writer, value BytesValue) error {
+func (value *BytesValue) encodeTopLevel(writer io.Writer) error {
 	_, err := writer.Write(value.Value)
 	return err
 }
 
-func (c *codecForBytes) decodeNested(reader io.Reader, value *BytesValue) error {
+func (value *BytesValue) decodeNested(reader io.Reader) error {
 	length, err := decodeLength(reader)
 	if err != nil {
 		return err
@@ -37,7 +39,7 @@ func (c *codecForBytes) decodeNested(reader io.Reader, value *BytesValue) error 
 	return nil
 }
 
-func (c *codecForBytes) decodeTopLevel(data []byte, value *BytesValue) error {
+func (value *BytesValue) decodeTopLevel(data []byte) error {
 	value.Value = data
 	return nil
 }

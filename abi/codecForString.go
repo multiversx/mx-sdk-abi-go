@@ -4,10 +4,12 @@ import (
 	"io"
 )
 
-type codecForString struct {
+// StringValue is a wrapper for a string
+type StringValue struct {
+	Value string
 }
 
-func (c *codecForString) encodeNested(writer io.Writer, value StringValue) error {
+func (value *StringValue) encodeNested(writer io.Writer) error {
 	data := []byte(value.Value)
 	err := encodeLength(writer, uint32(len(data)))
 	if err != nil {
@@ -18,12 +20,12 @@ func (c *codecForString) encodeNested(writer io.Writer, value StringValue) error
 	return err
 }
 
-func (c *codecForString) encodeTopLevel(writer io.Writer, value StringValue) error {
+func (value *StringValue) encodeTopLevel(writer io.Writer) error {
 	_, err := writer.Write([]byte(value.Value))
 	return err
 }
 
-func (c *codecForString) decodeNested(reader io.Reader, value *StringValue) error {
+func (value *StringValue) decodeNested(reader io.Reader) error {
 	length, err := decodeLength(reader)
 	if err != nil {
 		return err
@@ -38,7 +40,7 @@ func (c *codecForString) decodeNested(reader io.Reader, value *StringValue) erro
 	return nil
 }
 
-func (c *codecForString) decodeTopLevel(data []byte, value *StringValue) error {
+func (value *StringValue) decodeTopLevel(data []byte) error {
 	value.Value = string(data)
 	return nil
 }

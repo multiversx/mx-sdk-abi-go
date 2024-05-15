@@ -9,12 +9,7 @@ import (
 )
 
 type codec struct {
-	codecForBool     *codecForBool
 	codecForSmallInt *codecForSmallInt
-	codecForBigInt   *codecForBigInt
-	codecForAddress  *codecForAddress
-	codecForString   *codecForString
-	codecForBytes    *codecForBytes
 	codecForStruct   *codeForStruct
 	codecForEnum     *codecForEnum
 	codecForOption   *codecForOption
@@ -34,14 +29,7 @@ func newCodec(args argsNewCodec) (*codec, error) {
 	}
 
 	codec := &codec{
-		codecForBool:     &codecForBool{},
 		codecForSmallInt: &codecForSmallInt{},
-		codecForBigInt:   &codecForBigInt{},
-		codecForAddress: &codecForAddress{
-			pubKeyLength: args.pubKeyLength,
-		},
-		codecForString: &codecForString{},
-		codecForBytes:  &codecForBytes{},
 	}
 
 	codec.codecForStruct = &codeForStruct{
@@ -77,7 +65,7 @@ func (c *codec) EncodeNested(value any) ([]byte, error) {
 func (c *codec) doEncodeNested(writer io.Writer, value any) error {
 	switch value := value.(type) {
 	case BoolValue:
-		return c.codecForBool.encodeNested(writer, value)
+		return value.encodeNested(writer)
 	case U8Value:
 		return c.codecForSmallInt.encodeNested(writer, value.Value, 1)
 	case U16Value:
@@ -95,15 +83,15 @@ func (c *codec) doEncodeNested(writer io.Writer, value any) error {
 	case I64Value:
 		return c.codecForSmallInt.encodeNested(writer, value.Value, 8)
 	case BigUIntValue:
-		return c.codecForBigInt.encodeNestedUnsigned(writer, value.Value)
+		return value.encodeNested(writer)
 	case BigIntValue:
-		return c.codecForBigInt.encodeNestedSigned(writer, value.Value)
+		return value.encodeNested(writer)
 	case AddressValue:
-		return c.codecForAddress.encodeNested(writer, value)
+		return value.encodeNested(writer)
 	case StringValue:
-		return c.codecForString.encodeNested(writer, value)
+		return value.encodeNested(writer)
 	case BytesValue:
-		return c.codecForBytes.encodeNested(writer, value)
+		return value.encodeNested(writer)
 	case StructValue:
 		return c.codecForStruct.encodeNested(writer, value)
 	case EnumValue:
@@ -131,7 +119,7 @@ func (c *codec) EncodeTopLevel(value any) ([]byte, error) {
 func (c *codec) doEncodeTopLevel(writer io.Writer, value any) error {
 	switch value := value.(type) {
 	case BoolValue:
-		return c.codecForBool.encodeTopLevel(writer, value)
+		return value.encodeTopLevel(writer)
 	case U8Value:
 		return c.codecForSmallInt.encodeTopLevelUnsigned(writer, uint64(value.Value))
 	case U16Value:
@@ -149,15 +137,15 @@ func (c *codec) doEncodeTopLevel(writer io.Writer, value any) error {
 	case I64Value:
 		return c.codecForSmallInt.encodeTopLevelSigned(writer, value.Value)
 	case BigUIntValue:
-		return c.codecForBigInt.encodeTopLevelUnsigned(writer, value.Value)
+		return value.encodeTopLevel(writer)
 	case BigIntValue:
-		return c.codecForBigInt.encodeTopLevelSigned(writer, value.Value)
+		return value.encodeTopLevel(writer)
 	case AddressValue:
-		return c.codecForAddress.encodeTopLevel(writer, value)
+		return value.encodeTopLevel(writer)
 	case StringValue:
-		return c.codecForString.encodeTopLevel(writer, value)
+		return value.encodeTopLevel(writer)
 	case BytesValue:
-		return c.codecForBytes.encodeTopLevel(writer, value)
+		return value.encodeTopLevel(writer)
 	case StructValue:
 		return c.codecForStruct.encodeTopLevel(writer, value)
 	case EnumValue:
@@ -185,7 +173,7 @@ func (c *codec) DecodeNested(data []byte, value any) error {
 func (c *codec) doDecodeNested(reader io.Reader, value any) error {
 	switch value := value.(type) {
 	case *BoolValue:
-		return c.codecForBool.decodeNested(reader, value)
+		return value.decodeNested(reader)
 	case *U8Value:
 		return c.codecForSmallInt.decodeNested(reader, &value.Value, 1)
 	case *U16Value:
@@ -203,27 +191,15 @@ func (c *codec) doDecodeNested(reader io.Reader, value any) error {
 	case *I64Value:
 		return c.codecForSmallInt.decodeNested(reader, &value.Value, 8)
 	case *BigUIntValue:
-		n, err := c.codecForBigInt.decodeNestedUnsigned(reader)
-		if err != nil {
-			return err
-		}
-
-		value.Value = n
-		return nil
+		return value.decodeNested(reader)
 	case *BigIntValue:
-		n, err := c.codecForBigInt.decodeNestedSigned(reader)
-		if err != nil {
-			return err
-		}
-
-		value.Value = n
-		return nil
+		return value.decodeNested(reader)
 	case *AddressValue:
-		return c.codecForAddress.decodeNested(reader, value)
+		return value.decodeNested(reader)
 	case *StringValue:
-		return c.codecForString.decodeNested(reader, value)
+		return value.decodeNested(reader)
 	case *BytesValue:
-		return c.codecForBytes.decodeNested(reader, value)
+		return value.decodeNested(reader)
 	case *StructValue:
 		return c.codecForStruct.decodeNested(reader, value)
 	case *EnumValue:
@@ -250,7 +226,7 @@ func (c *codec) DecodeTopLevel(data []byte, value any) error {
 func (c *codec) doDecodeTopLevel(data []byte, value any) error {
 	switch value := value.(type) {
 	case *BoolValue:
-		return c.codecForBool.decodeTopLevel(data, value)
+		return value.decodeTopLevel(data)
 	case *U8Value:
 		n, err := c.codecForSmallInt.decodeTopLevelUnsigned(data, math.MaxUint8)
 		if err != nil {
@@ -309,17 +285,15 @@ func (c *codec) doDecodeTopLevel(data []byte, value any) error {
 
 		value.Value = int64(n)
 	case *BigUIntValue:
-		n := c.codecForBigInt.decodeTopLevelUnsigned(data)
-		value.Value = n
+		value.decodeTopLevel(data)
 	case *BigIntValue:
-		n := c.codecForBigInt.decodeTopLevelSigned(data)
-		value.Value = n
+		value.decodeTopLevel(data)
 	case *AddressValue:
-		return c.codecForAddress.decodeTopLevel(data, value)
+		return value.decodeTopLevel(data)
 	case *StringValue:
-		return c.codecForString.decodeTopLevel(data, value)
+		return value.decodeTopLevel(data)
 	case *BytesValue:
-		return c.codecForBytes.decodeTopLevel(data, value)
+		return value.decodeTopLevel(data)
 	case *StructValue:
 		return c.codecForStruct.decodeTopLevel(data, value)
 	case *EnumValue:
