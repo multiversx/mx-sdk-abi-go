@@ -106,18 +106,18 @@ func TestSerializer_Serialize(t *testing.T) {
 
 	t.Run("multi<multi<u8, u16>, multi<u8, u16>>", func(t *testing.T) {
 		data, err := serializer.Serialize([]any{
-			InputMultiValue{
+			&InputMultiValue{
 				Items: []any{
-					InputMultiValue{
+					&InputMultiValue{
 						Items: []any{
-							U8Value{Value: 0x42},
-							U16Value{Value: 0x4243},
+							&U8Value{Value: 0x42},
+							&U16Value{Value: 0x4243},
 						},
 					},
-					InputMultiValue{
+					&InputMultiValue{
 						Items: []any{
-							U8Value{Value: 0x44},
-							U16Value{Value: 0x4445},
+							&U8Value{Value: 0x44},
+							&U16Value{Value: 0x4445},
 						},
 					},
 				},
@@ -161,11 +161,11 @@ func TestSerializer_Serialize(t *testing.T) {
 
 	t.Run("u8, variadic<u8>", func(t *testing.T) {
 		data, err := serializer.Serialize([]any{
-			U8Value{Value: 0x41},
-			InputVariadicValues{
+			&U8Value{Value: 0x41},
+			&InputVariadicValues{
 				Items: []any{
-					U8Value{Value: 0x42},
-					U8Value{Value: 0x43},
+					&U8Value{Value: 0x42},
+					&U8Value{Value: 0x43},
 				},
 			},
 		})
@@ -414,20 +414,20 @@ func TestSerializer_InRealWorldScenarios(t *testing.T) {
 	oneQuintillion := big.NewInt(0).SetUint64(1_000_000_000_000_000_000)
 
 	t.Run("real-world (1): serialize input of multisig.proposeBatch(variadic<Action>), ", func(t *testing.T) {
-		createEsdtTokenPayment := func(tokenIdentifier string, tokenNonce uint64, amount *big.Int) StructValue {
-			return StructValue{
+		createEsdtTokenPayment := func(tokenIdentifier string, tokenNonce uint64, amount *big.Int) *StructValue {
+			return &StructValue{
 				Fields: []Field{
 					{
 						Name:  "token_identifier",
-						Value: StringValue{Value: tokenIdentifier},
+						Value: &StringValue{Value: tokenIdentifier},
 					},
 					{
 						Name:  "token_nonce",
-						Value: U64Value{Value: tokenNonce},
+						Value: &U64Value{Value: tokenNonce},
 					},
 					{
 						Name:  "amount",
-						Value: BigUIntValue{Value: amount},
+						Value: &BigUIntValue{Value: amount},
 					},
 				},
 			}
@@ -440,28 +440,28 @@ func TestSerializer_InRealWorldScenarios(t *testing.T) {
 			Fields: []Field{
 				{
 					Name:  "to",
-					Value: AddressValue{Value: alicePubKey},
+					Value: &AddressValue{Value: alicePubKey},
 				},
 				{
 					Name:  "egld_amount",
-					Value: BigUIntValue{Value: oneQuintillion},
+					Value: &BigUIntValue{Value: oneQuintillion},
 				},
 				{
 					Name: "opt_gas_limit",
-					Value: OptionValue{
+					Value: &OptionValue{
 						Value: &U64Value{Value: 15000000},
 					},
 				},
 				{
 					Name:  "endpoint_name",
-					Value: BytesValue{Value: []byte("example")},
+					Value: &BytesValue{Value: []byte("example")},
 				},
 				{
 					Name: "arguments",
-					Value: InputListValue{
-						Items: []any{
-							BytesValue{Value: []byte{0x03, 0x42}},
-							BytesValue{Value: []byte{0x07, 0x43}},
+					Value: &ListValue{
+						Items: []singleValue{
+							&BytesValue{Value: []byte{0x03, 0x42}},
+							&BytesValue{Value: []byte{0x07, 0x43}},
 						},
 					},
 				},
@@ -475,12 +475,12 @@ func TestSerializer_InRealWorldScenarios(t *testing.T) {
 			Fields: []Field{
 				{
 					Name:  "to",
-					Value: AddressValue{Value: alicePubKey},
+					Value: &AddressValue{Value: alicePubKey},
 				},
 				{
 					Name: "tokens",
-					Value: InputListValue{
-						Items: []any{
+					Value: &ListValue{
+						Items: []singleValue{
 							createEsdtTokenPayment("beer", 0, oneQuintillion),
 							createEsdtTokenPayment("chocolate", 0, oneQuintillion),
 						},
@@ -488,20 +488,20 @@ func TestSerializer_InRealWorldScenarios(t *testing.T) {
 				},
 				{
 					Name: "opt_gas_limit",
-					Value: OptionValue{
+					Value: &OptionValue{
 						Value: &U64Value{Value: 15000000},
 					},
 				},
 				{
 					Name:  "endpoint_name",
-					Value: BytesValue{Value: []byte("example")},
+					Value: &BytesValue{Value: []byte("example")},
 				},
 				{
 					Name: "arguments",
-					Value: InputListValue{
-						Items: []any{
-							BytesValue{Value: []byte{0x03, 0x42}},
-							BytesValue{Value: []byte{0x07, 0x43}},
+					Value: &ListValue{
+						Items: []singleValue{
+							&BytesValue{Value: []byte{0x03, 0x42}},
+							&BytesValue{Value: []byte{0x07, 0x43}},
 						},
 					},
 				},
@@ -538,48 +538,48 @@ func TestSerializer_InRealWorldScenarios(t *testing.T) {
 		// Drop the delimiters (were added for readability)
 		data := strings.Replace(dataHex, "|", "", -1)
 
-		actionId := U32Value{}
-		groupId := U32Value{}
+		actionId := &U32Value{}
+		groupId := &U32Value{}
 
-		actionTo := AddressValue{}
-		actionEgldAmount := BigUIntValue{}
-		actionGasLimit := U64Value{}
-		actionEndpointName := BytesValue{}
-		actionArguments := OutputListValue{
-			ItemCreator: func() any {
+		actionTo := &AddressValue{}
+		actionEgldAmount := &BigUIntValue{}
+		actionGasLimit := &U64Value{}
+		actionEndpointName := &BytesValue{}
+		actionArguments := &ListValue{
+			ItemCreator: func() singleValue {
 				return &BytesValue{}
 			},
 		}
 
-		action := EnumValue{
+		action := &EnumValue{
 			Fields: []Field{
 				{
 					Name:  "to",
-					Value: &actionTo,
+					Value: actionTo,
 				},
 				{
 					Name:  "egld_amount",
-					Value: &actionEgldAmount,
+					Value: actionEgldAmount,
 				},
 				{
 					Name: "opt_gas_limit",
 					Value: &OptionValue{
-						Value: &actionGasLimit,
+						Value: actionGasLimit,
 					},
 				},
 				{
 					Name:  "endpoint_name",
-					Value: &actionEndpointName,
+					Value: actionEndpointName,
 				},
 				{
 					Name:  "arguments",
-					Value: &actionArguments,
+					Value: actionArguments,
 				},
 			},
 		}
 
-		signers := OutputListValue{
-			ItemCreator: func() any {
+		signers := &ListValue{
+			ItemCreator: func() singleValue {
 				return &AddressValue{}
 			},
 		}
@@ -590,19 +590,19 @@ func TestSerializer_InRealWorldScenarios(t *testing.T) {
 					Fields: []Field{
 						{
 							Name:  "action_id",
-							Value: &actionId,
+							Value: actionId,
 						},
 						{
 							Name:  "group_id",
-							Value: &groupId,
+							Value: groupId,
 						},
 						{
 							Name:  "action_data",
-							Value: &action,
+							Value: action,
 						},
 						{
 							Name:  "signers",
-							Value: &signers,
+							Value: signers,
 						},
 					},
 				}

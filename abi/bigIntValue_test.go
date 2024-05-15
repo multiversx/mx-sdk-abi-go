@@ -6,28 +6,26 @@ import (
 )
 
 func TestBigIntValue(t *testing.T) {
-	codec, _ := newCodec(argsNewCodec{
-		pubKeyLength: 32,
-	})
+	codec := &codec{}
 
 	t.Run("should encode nested", func(t *testing.T) {
-		testEncodeNested(t, codec, BigIntValue{Value: big.NewInt(0)}, "00000000")
-		testEncodeNested(t, codec, BigIntValue{Value: big.NewInt(1)}, "0000000101")
-		testEncodeNested(t, codec, BigIntValue{Value: big.NewInt(-1)}, "00000001ff")
-		testEncodeNested(t, codec, BigIntValue{Value: big.NewInt(127)}, "000000017f")
-		testEncodeNested(t, codec, BigIntValue{Value: big.NewInt(128)}, "000000020080")
-		testEncodeNested(t, codec, BigIntValue{Value: big.NewInt(255)}, "0000000200ff")
-		testEncodeNested(t, codec, BigIntValue{Value: big.NewInt(256)}, "000000020100")
+		testEncodeNested(t, codec, &BigIntValue{Value: big.NewInt(0)}, "00000000")
+		testEncodeNested(t, codec, &BigIntValue{Value: big.NewInt(1)}, "0000000101")
+		testEncodeNested(t, codec, &BigIntValue{Value: big.NewInt(-1)}, "00000001ff")
+		testEncodeNested(t, codec, &BigIntValue{Value: big.NewInt(127)}, "000000017f")
+		testEncodeNested(t, codec, &BigIntValue{Value: big.NewInt(128)}, "000000020080")
+		testEncodeNested(t, codec, &BigIntValue{Value: big.NewInt(255)}, "0000000200ff")
+		testEncodeNested(t, codec, &BigIntValue{Value: big.NewInt(256)}, "000000020100")
 	})
 
 	t.Run("should encode top-level", func(t *testing.T) {
-		testEncodeTopLevel(t, codec, BigIntValue{Value: big.NewInt(0)}, "")
-		testEncodeTopLevel(t, codec, BigIntValue{Value: big.NewInt(1)}, "01")
-		testEncodeTopLevel(t, codec, BigIntValue{Value: big.NewInt(-1)}, "ff")
-		testEncodeTopLevel(t, codec, BigIntValue{Value: big.NewInt(127)}, "7f")
-		testEncodeTopLevel(t, codec, BigIntValue{Value: big.NewInt(128)}, "0080")
-		testEncodeTopLevel(t, codec, BigIntValue{Value: big.NewInt(255)}, "00ff")
-		testEncodeTopLevel(t, codec, BigIntValue{Value: big.NewInt(256)}, "0100")
+		testEncodeTopLevel(t, codec, &BigIntValue{Value: big.NewInt(0)}, "")
+		testEncodeTopLevel(t, codec, &BigIntValue{Value: big.NewInt(1)}, "01")
+		testEncodeTopLevel(t, codec, &BigIntValue{Value: big.NewInt(-1)}, "ff")
+		testEncodeTopLevel(t, codec, &BigIntValue{Value: big.NewInt(127)}, "7f")
+		testEncodeTopLevel(t, codec, &BigIntValue{Value: big.NewInt(128)}, "0080")
+		testEncodeTopLevel(t, codec, &BigIntValue{Value: big.NewInt(255)}, "00ff")
+		testEncodeTopLevel(t, codec, &BigIntValue{Value: big.NewInt(256)}, "0100")
 	})
 
 	t.Run("should decode nested", func(t *testing.T) {

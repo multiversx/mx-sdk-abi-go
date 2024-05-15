@@ -25,12 +25,7 @@ func NewSerializer(args ArgsNewSerializer) (*serializer, error) {
 		return nil, errors.New("cannot create serializer: parts separator must not be empty")
 	}
 
-	codec, err := newCodec(argsNewCodec{
-		pubKeyLength: args.PubKeyLength,
-	})
-	if err != nil {
-		return nil, err
-	}
+	codec := &codec{}
 
 	return &serializer{
 		codec:          codec,
@@ -40,6 +35,10 @@ func NewSerializer(args ArgsNewSerializer) (*serializer, error) {
 
 // Serialize serializes the given input values into a string
 func (s *serializer) Serialize(inputValues []any) (string, error) {
+	return s.serializeToEncodedParts(inputValues)
+}
+
+func (s *serializer) serializeToEncodedParts(inputValues []any) (string, error) {
 	parts, err := s.serializeToParts(inputValues)
 	if err != nil {
 		return "", err
@@ -86,8 +85,13 @@ func (s *serializer) doSerialize(partsHolder *partsHolder, inputValues []any) er
 
 			err = s.serializeInputVariadicValues(partsHolder, value)
 		default:
+			valueAsSingleValue, ok := value.(singleValue)
+			if !ok {
+				return errors.New("cannot serialize value: it must be a 'single value'")
+			}
+
 			partsHolder.appendEmptyPart()
-			err = s.serializeSingleValue(partsHolder, value)
+			err = s.serializeSingleValue(partsHolder, valueAsSingleValue)
 		}
 
 		if err != nil {
@@ -146,7 +150,12 @@ func (s *serializer) doDeserialize(partsHolder *partsHolder, outputValues []any)
 
 			err = s.deserializeOutputVariadicValues(partsHolder, value)
 		default:
-			err = s.deserializeSingleValue(partsHolder, value)
+			valueAsSingleValue, ok := value.(singleValue)
+			if !ok {
+				return errors.New("cannot deserialize into value: it must be a 'single value'")
+			}
+
+			err = s.deserializeSingleValue(partsHolder, valueAsSingleValue)
 		}
 
 		if err != nil {
@@ -187,7 +196,7 @@ func (s *serializer) serializeInputVariadicValues(partsHolder *partsHolder, valu
 	return nil
 }
 
-func (s *serializer) serializeSingleValue(partsHolder *partsHolder, value any) error {
+func (s *serializer) serializeSingleValue(partsHolder *partsHolder, value singleValue) error {
 	data, err := s.codec.EncodeTopLevel(value)
 	if err != nil {
 		return err
@@ -240,7 +249,7 @@ func (s *serializer) deserializeOutputVariadicValues(partsHolder *partsHolder, v
 	return nil
 }
 
-func (s *serializer) deserializeSingleValue(partsHolder *partsHolder, value any) error {
+func (s *serializer) deserializeSingleValue(partsHolder *partsHolder, value singleValue) error {
 	part, err := partsHolder.readWholeFocusedPart()
 	if err != nil {
 		return err

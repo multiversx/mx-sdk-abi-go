@@ -5,18 +5,16 @@ import (
 )
 
 func TestBoolValue(t *testing.T) {
-	codec, _ := newCodec(argsNewCodec{
-		pubKeyLength: 32,
-	})
+	codec := &codec{}
 
 	t.Run("should encode nested", func(t *testing.T) {
-		testEncodeNested(t, codec, BoolValue{Value: false}, "00")
-		testEncodeNested(t, codec, BoolValue{Value: true}, "01")
+		testEncodeNested(t, codec, &BoolValue{Value: false}, "00")
+		testEncodeNested(t, codec, &BoolValue{Value: true}, "01")
 	})
 
 	t.Run("should encode top-level", func(t *testing.T) {
-		testEncodeTopLevel(t, codec, BoolValue{Value: false}, "")
-		testEncodeTopLevel(t, codec, BoolValue{Value: true}, "01")
+		testEncodeTopLevel(t, codec, &BoolValue{Value: false}, "")
+		testEncodeTopLevel(t, codec, &BoolValue{Value: true}, "01")
 	})
 
 	t.Run("should decode nested", func(t *testing.T) {

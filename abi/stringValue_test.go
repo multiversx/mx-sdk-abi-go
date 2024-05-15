@@ -5,18 +5,16 @@ import (
 )
 
 func TestStringValue(t *testing.T) {
-	codec, _ := newCodec(argsNewCodec{
-		pubKeyLength: 32,
-	})
+	codec := &codec{}
 
 	t.Run("should encode nested", func(t *testing.T) {
-		testEncodeNested(t, codec, StringValue{Value: ""}, "00000000")
-		testEncodeNested(t, codec, StringValue{Value: "abc"}, "00000003616263")
+		testEncodeNested(t, codec, &StringValue{Value: ""}, "00000000")
+		testEncodeNested(t, codec, &StringValue{Value: "abc"}, "00000003616263")
 	})
 
 	t.Run("should encode top-level", func(t *testing.T) {
-		testEncodeTopLevel(t, codec, StringValue{Value: ""}, "")
-		testEncodeTopLevel(t, codec, StringValue{Value: "abc"}, "616263")
+		testEncodeTopLevel(t, codec, &StringValue{Value: ""}, "")
+		testEncodeTopLevel(t, codec, &StringValue{Value: "abc"}, "616263")
 	})
 
 	t.Run("should decode nested", func(t *testing.T) {

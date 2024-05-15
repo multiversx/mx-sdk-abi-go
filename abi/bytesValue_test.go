@@ -5,18 +5,16 @@ import (
 )
 
 func TestBytesValue(t *testing.T) {
-	codec, _ := newCodec(argsNewCodec{
-		pubKeyLength: 32,
-	})
+	codec := &codec{}
 
 	t.Run("should encode nested", func(t *testing.T) {
-		testEncodeNested(t, codec, BytesValue{Value: []byte{}}, "00000000")
-		testEncodeNested(t, codec, BytesValue{Value: []byte{'a', 'b', 'c'}}, "00000003616263")
+		testEncodeNested(t, codec, &BytesValue{Value: []byte{}}, "00000000")
+		testEncodeNested(t, codec, &BytesValue{Value: []byte{'a', 'b', 'c'}}, "00000003616263")
 	})
 
 	t.Run("should encode top-level", func(t *testing.T) {
-		testEncodeTopLevel(t, codec, BytesValue{Value: []byte{}}, "")
-		testEncodeTopLevel(t, codec, BytesValue{Value: []byte{'a', 'b', 'c'}}, "616263")
+		testEncodeTopLevel(t, codec, &BytesValue{Value: []byte{}}, "")
+		testEncodeTopLevel(t, codec, &BytesValue{Value: []byte{'a', 'b', 'c'}}, "616263")
 	})
 
 	t.Run("should decode nested", func(t *testing.T) {

@@ -6,25 +6,23 @@ import (
 )
 
 func TestBigUIntValue(t *testing.T) {
-	codec, _ := newCodec(argsNewCodec{
-		pubKeyLength: 32,
-	})
+	codec := &codec{}
 
 	t.Run("should encode nested", func(t *testing.T) {
-		testEncodeNested(t, codec, BigUIntValue{Value: big.NewInt(0)}, "00000000")
-		testEncodeNested(t, codec, BigUIntValue{Value: big.NewInt(1)}, "0000000101")
-		testEncodeNested(t, codec, BigUIntValue{Value: big.NewInt(127)}, "000000017f")
-		testEncodeNested(t, codec, BigUIntValue{Value: big.NewInt(128)}, "0000000180")
-		testEncodeNested(t, codec, BigUIntValue{Value: big.NewInt(255)}, "00000001ff")
-		testEncodeNested(t, codec, BigUIntValue{Value: big.NewInt(256)}, "000000020100")
+		testEncodeNested(t, codec, &BigUIntValue{Value: big.NewInt(0)}, "00000000")
+		testEncodeNested(t, codec, &BigUIntValue{Value: big.NewInt(1)}, "0000000101")
+		testEncodeNested(t, codec, &BigUIntValue{Value: big.NewInt(127)}, "000000017f")
+		testEncodeNested(t, codec, &BigUIntValue{Value: big.NewInt(128)}, "0000000180")
+		testEncodeNested(t, codec, &BigUIntValue{Value: big.NewInt(255)}, "00000001ff")
+		testEncodeNested(t, codec, &BigUIntValue{Value: big.NewInt(256)}, "000000020100")
 	})
 
 	t.Run("should encode top-level", func(t *testing.T) {
-		testEncodeTopLevel(t, codec, BigUIntValue{Value: big.NewInt(0)}, "")
-		testEncodeTopLevel(t, codec, BigUIntValue{Value: big.NewInt(1)}, "01")
-		testEncodeTopLevel(t, codec, BigUIntValue{Value: big.NewInt(127)}, "7f")
-		testEncodeTopLevel(t, codec, BigUIntValue{Value: big.NewInt(128)}, "80")
-		testEncodeTopLevel(t, codec, BigUIntValue{Value: big.NewInt(256)}, "0100")
+		testEncodeTopLevel(t, codec, &BigUIntValue{Value: big.NewInt(0)}, "")
+		testEncodeTopLevel(t, codec, &BigUIntValue{Value: big.NewInt(1)}, "01")
+		testEncodeTopLevel(t, codec, &BigUIntValue{Value: big.NewInt(127)}, "7f")
+		testEncodeTopLevel(t, codec, &BigUIntValue{Value: big.NewInt(128)}, "80")
+		testEncodeTopLevel(t, codec, &BigUIntValue{Value: big.NewInt(256)}, "0100")
 	})
 
 	t.Run("should decode nested", func(t *testing.T) {

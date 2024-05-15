@@ -4,35 +4,33 @@ import (
 	"testing"
 )
 
-func TestCodecForEnum(t *testing.T) {
-	codec, _ := newCodec(argsNewCodec{
-		pubKeyLength: 32,
-	})
+func TestEnumValue(t *testing.T) {
+	codec := &codec{}
 
 	t.Run("should encode nested", func(t *testing.T) {
 		testEncodeNested(t, codec,
-			EnumValue{
+			&EnumValue{
 				Discriminant: 0,
 			},
 			"00",
 		)
 
 		testEncodeNested(t, codec,
-			EnumValue{
+			&EnumValue{
 				Discriminant: 42,
 			},
 			"2a",
 		)
 
 		testEncodeNested(t, codec,
-			EnumValue{
+			&EnumValue{
 				Discriminant: 42,
 				Fields: []Field{
 					{
-						Value: U8Value{Value: 0x01},
+						Value: &U8Value{Value: 0x01},
 					},
 					{
-						Value: U16Value{Value: 0x4142},
+						Value: &U16Value{Value: 0x4142},
 					},
 				},
 			},
@@ -42,28 +40,28 @@ func TestCodecForEnum(t *testing.T) {
 
 	t.Run("should encode top-level", func(t *testing.T) {
 		testEncodeTopLevel(t, codec,
-			EnumValue{
+			&EnumValue{
 				Discriminant: 0,
 			},
 			"",
 		)
 
 		testEncodeTopLevel(t, codec,
-			EnumValue{
+			&EnumValue{
 				Discriminant: 42,
 			},
 			"2a",
 		)
 
 		testEncodeTopLevel(t, codec,
-			EnumValue{
+			&EnumValue{
 				Discriminant: 42,
 				Fields: []Field{
 					{
-						Value: U8Value{Value: 0x01},
+						Value: &U8Value{Value: 0x01},
 					},
 					{
-						Value: U16Value{Value: 0x4142},
+						Value: &U16Value{Value: 0x4142},
 					},
 				},
 			},

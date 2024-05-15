@@ -5,26 +5,24 @@ import (
 )
 
 func TestCodecForOption(t *testing.T) {
-	codec, _ := newCodec(argsNewCodec{
-		pubKeyLength: 32,
-	})
+	codec := &codec{}
 
 	t.Run("should encode nested", func(t *testing.T) {
-		testEncodeNested(t, codec, OptionValue{
+		testEncodeNested(t, codec, &OptionValue{
 			Value: nil,
 		}, "00")
 
-		testEncodeNested(t, codec, OptionValue{
+		testEncodeNested(t, codec, &OptionValue{
 			Value: &U16Value{Value: 0x08},
 		}, "010008")
 	})
 
 	t.Run("should encode top-level", func(t *testing.T) {
-		testEncodeTopLevel(t, codec, OptionValue{
+		testEncodeTopLevel(t, codec, &OptionValue{
 			Value: nil,
 		}, "")
 
-		testEncodeTopLevel(t, codec, OptionValue{
+		testEncodeTopLevel(t, codec, &OptionValue{
 			Value: &U16Value{Value: 0x08},
 		}, "010008")
 	})

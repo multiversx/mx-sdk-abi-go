@@ -4,20 +4,18 @@ import (
 	"testing"
 )
 
-func TestCodecForStruct(t *testing.T) {
-	codec, _ := newCodec(argsNewCodec{
-		pubKeyLength: 32,
-	})
+func TestStructValue(t *testing.T) {
+	codec := &codec{}
 
 	t.Run("should encode nested", func(t *testing.T) {
 		testEncodeNested(t, codec,
-			StructValue{
+			&StructValue{
 				Fields: []Field{
 					{
-						Value: U8Value{Value: 0x01},
+						Value: &U8Value{Value: 0x01},
 					},
 					{
-						Value: U16Value{Value: 0x4142},
+						Value: &U16Value{Value: 0x4142},
 					},
 				},
 			},
@@ -27,13 +25,13 @@ func TestCodecForStruct(t *testing.T) {
 
 	t.Run("should encode top-level", func(t *testing.T) {
 		testEncodeTopLevel(t, codec,
-			StructValue{
+			&StructValue{
 				Fields: []Field{
 					{
-						Value: U8Value{Value: 0x01},
+						Value: &U8Value{Value: 0x01},
 					},
 					{
-						Value: U16Value{Value: 0x4142},
+						Value: &U16Value{Value: 0x4142},
 					},
 				},
 			},

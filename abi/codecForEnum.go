@@ -6,18 +6,21 @@ import (
 	"io"
 )
 
-type codecForEnum struct {
-	generalCodec generalCodec
+// EnumValue is an enum (discriminant and fields)
+type EnumValue struct {
+	Discriminant uint8
+	Fields       []Field
 }
 
-func (c *codecForEnum) encodeNested(writer io.Writer, value EnumValue) error {
-	err := c.generalCodec.doEncodeNested(writer, U8Value{Value: value.Discriminant})
+func (value *EnumValue) encodeNested(writer io.Writer) error {
+	discriminant := U8Value{Value: value.Discriminant}
+	err := discriminant.encodeNested(writer)
 	if err != nil {
 		return err
 	}
 
 	for _, field := range value.Fields {
-		err := c.generalCodec.doEncodeNested(writer, field.Value)
+		err := field.Value.encodeNested(writer)
 		if err != nil {
 			return fmt.Errorf("cannot encode field '%s' of enum, because of: %w", field.Name, err)
 		}
@@ -26,18 +29,18 @@ func (c *codecForEnum) encodeNested(writer io.Writer, value EnumValue) error {
 	return nil
 }
 
-func (c *codecForEnum) encodeTopLevel(writer io.Writer, value EnumValue) error {
+func (value *EnumValue) encodeTopLevel(writer io.Writer) error {
 	if value.Discriminant == 0 && len(value.Fields) == 0 {
 		// Write nothing
 		return nil
 	}
 
-	return c.encodeNested(writer, value)
+	return value.encodeNested(writer)
 }
 
-func (c *codecForEnum) decodeNested(reader io.Reader, value *EnumValue) error {
+func (value *EnumValue) decodeNested(reader io.Reader) error {
 	discriminant := &U8Value{}
-	err := c.generalCodec.doDecodeNested(reader, discriminant)
+	err := discriminant.decodeNested(reader)
 	if err != nil {
 		return err
 	}
@@ -45,7 +48,7 @@ func (c *codecForEnum) decodeNested(reader io.Reader, value *EnumValue) error {
 	value.Discriminant = discriminant.Value
 
 	for _, field := range value.Fields {
-		err := c.generalCodec.doDecodeNested(reader, field.Value)
+		err := field.Value.decodeNested(reader)
 		if err != nil {
 			return fmt.Errorf("cannot decode field '%s' of enum, because of: %w", field.Name, err)
 		}
@@ -54,12 +57,12 @@ func (c *codecForEnum) decodeNested(reader io.Reader, value *EnumValue) error {
 	return nil
 }
 
-func (c *codecForEnum) decodeTopLevel(data []byte, value *EnumValue) error {
+func (value *EnumValue) decodeTopLevel(data []byte) error {
 	if len(data) == 0 {
 		value.Discriminant = 0
 		return nil
 	}
 
 	reader := bytes.NewReader(data)
-	return c.decodeNested(reader, value)
+	return value.decodeNested(reader)
 }

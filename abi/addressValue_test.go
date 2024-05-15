@@ -8,9 +8,7 @@ import (
 )
 
 func TestAddressValue(t *testing.T) {
-	codec, _ := newCodec(argsNewCodec{
-		pubKeyLength: 32,
-	})
+	codec := &codec{}
 
 	alicePubKeyHex := "0139472eff6886771a982f3083da5d421f24c29181e63888228dc81ca60d69e1"
 	alicePubKey, _ := hex.DecodeString(alicePubKeyHex)
@@ -19,20 +17,20 @@ func TestAddressValue(t *testing.T) {
 	shortPubKey, _ := hex.DecodeString(shortPubKeyHex)
 
 	t.Run("should encode nested", func(t *testing.T) {
-		testEncodeNested(t, codec, AddressValue{Value: alicePubKey}, alicePubKeyHex)
+		testEncodeNested(t, codec, &AddressValue{Value: alicePubKey}, alicePubKeyHex)
 	})
 
 	t.Run("should err on encode nested (bad public key length)", func(t *testing.T) {
-		_, err := codec.EncodeNested(AddressValue{Value: shortPubKey})
+		_, err := codec.EncodeNested(&AddressValue{Value: shortPubKey})
 		require.ErrorContains(t, err, "public key (address) has invalid length")
 	})
 
 	t.Run("should encode top-level", func(t *testing.T) {
-		testEncodeTopLevel(t, codec, AddressValue{Value: alicePubKey}, alicePubKeyHex)
+		testEncodeTopLevel(t, codec, &AddressValue{Value: alicePubKey}, alicePubKeyHex)
 	})
 
 	t.Run("should err on encode top-level (bad public key length)", func(t *testing.T) {
-		_, err := codec.EncodeTopLevel(AddressValue{Value: shortPubKey})
+		_, err := codec.EncodeTopLevel(&AddressValue{Value: shortPubKey})
 		require.ErrorContains(t, err, "public key (address) has invalid length")
 	})
 

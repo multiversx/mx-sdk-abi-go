@@ -6,13 +6,14 @@ import (
 	"io"
 )
 
-type codeForStruct struct {
-	generalCodec generalCodec
+// StructValue is a struct (collection of fields)
+type StructValue struct {
+	Fields []Field
 }
 
-func (c *codeForStruct) encodeNested(writer io.Writer, value StructValue) error {
+func (value *StructValue) encodeNested(writer io.Writer) error {
 	for _, field := range value.Fields {
-		err := c.generalCodec.doEncodeNested(writer, field.Value)
+		err := field.Value.encodeNested(writer)
 		if err != nil {
 			return fmt.Errorf("cannot encode field '%s' of struct, because of: %w", field.Name, err)
 		}
@@ -21,13 +22,13 @@ func (c *codeForStruct) encodeNested(writer io.Writer, value StructValue) error 
 	return nil
 }
 
-func (c *codeForStruct) encodeTopLevel(writer io.Writer, value StructValue) error {
-	return c.encodeNested(writer, value)
+func (value *StructValue) encodeTopLevel(writer io.Writer) error {
+	return value.encodeNested(writer)
 }
 
-func (c *codeForStruct) decodeNested(reader io.Reader, value *StructValue) error {
+func (value *StructValue) decodeNested(reader io.Reader) error {
 	for _, field := range value.Fields {
-		err := c.generalCodec.doDecodeNested(reader, field.Value)
+		err := field.Value.decodeNested(reader)
 		if err != nil {
 			return fmt.Errorf("cannot decode field '%s' of struct, because of: %w", field.Name, err)
 		}
@@ -36,7 +37,7 @@ func (c *codeForStruct) decodeNested(reader io.Reader, value *StructValue) error
 	return nil
 }
 
-func (c *codeForStruct) decodeTopLevel(data []byte, value *StructValue) error {
+func (value *StructValue) decodeTopLevel(data []byte) error {
 	reader := bytes.NewReader(data)
-	return c.decodeNested(reader, value)
+	return value.decodeNested(reader)
 }

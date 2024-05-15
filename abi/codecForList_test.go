@@ -7,18 +7,16 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCodecForList(t *testing.T) {
-	codec, _ := newCodec(argsNewCodec{
-		pubKeyLength: 32,
-	})
+func TestListValue(t *testing.T) {
+	codec := &codec{}
 
 	t.Run("should encode nested", func(t *testing.T) {
 		testEncodeNested(t, codec,
-			InputListValue{
-				Items: []any{
-					U16Value{Value: 1},
-					U16Value{Value: 2},
-					U16Value{Value: 3},
+			&ListValue{
+				Items: []singleValue{
+					&U16Value{Value: 1},
+					&U16Value{Value: 2},
+					&U16Value{Value: 3},
 				},
 			},
 			"00000003000100020003",
@@ -27,11 +25,11 @@ func TestCodecForList(t *testing.T) {
 
 	t.Run("should encode top-level", func(t *testing.T) {
 		testEncodeTopLevel(t, codec,
-			InputListValue{
-				Items: []any{
-					U16Value{Value: 1},
-					U16Value{Value: 2},
-					U16Value{Value: 3},
+			&ListValue{
+				Items: []singleValue{
+					&U16Value{Value: 1},
+					&U16Value{Value: 2},
+					&U16Value{Value: 3},
 				},
 			},
 			"000100020003",
@@ -41,9 +39,9 @@ func TestCodecForList(t *testing.T) {
 	t.Run("should decode nested", func(t *testing.T) {
 		data, _ := hex.DecodeString("00000003000100020003")
 
-		destination := &OutputListValue{
-			ItemCreator: func() any { return &U16Value{} },
-			Items:       []any{},
+		destination := &ListValue{
+			ItemCreator: func() singleValue { return &U16Value{} },
+			Items:       []singleValue{},
 		}
 
 		err := codec.DecodeNested(data, destination)
@@ -61,9 +59,9 @@ func TestCodecForList(t *testing.T) {
 	t.Run("should decode top-level", func(t *testing.T) {
 		data, _ := hex.DecodeString("000100020003")
 
-		destination := &OutputListValue{
-			ItemCreator: func() any { return &U16Value{} },
-			Items:       []any{},
+		destination := &ListValue{
+			ItemCreator: func() singleValue { return &U16Value{} },
+			Items:       []singleValue{},
 		}
 
 		err := codec.DecodeTopLevel(data, destination)
