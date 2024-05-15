@@ -58,6 +58,7 @@ func (value *BigIntValue) decodeNested(reader io.Reader) error {
 	return nil
 }
 
-func (value *BigIntValue) decodeTopLevel(data []byte) {
+func (value *BigIntValue) decodeTopLevel(data []byte) error {
 	value.Value = twos.FromBytes(data)
+	return nil
 }

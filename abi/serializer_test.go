@@ -449,7 +449,7 @@ func TestSerializer_InRealWorldScenarios(t *testing.T) {
 				{
 					Name: "opt_gas_limit",
 					Value: OptionValue{
-						Value: U64Value{Value: 15000000},
+						Value: &U64Value{Value: 15000000},
 					},
 				},
 				{
@@ -489,7 +489,7 @@ func TestSerializer_InRealWorldScenarios(t *testing.T) {
 				{
 					Name: "opt_gas_limit",
 					Value: OptionValue{
-						Value: U64Value{Value: 15000000},
+						Value: &U64Value{Value: 15000000},
 					},
 				},
 				{

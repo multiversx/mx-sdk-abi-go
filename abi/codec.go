@@ -10,7 +10,6 @@ import (
 type codec struct {
 	codecForStruct *codeForStruct
 	codecForEnum   *codecForEnum
-	codecForOption *codecForOption
 	codecForList   *codecForList
 }
 
@@ -33,10 +32,6 @@ func newCodec(args argsNewCodec) (*codec, error) {
 	}
 
 	codec.codecForEnum = &codecForEnum{
-		generalCodec: codec,
-	}
-
-	codec.codecForOption = &codecForOption{
 		generalCodec: codec,
 	}
 
@@ -93,7 +88,7 @@ func (c *codec) doEncodeNested(writer io.Writer, value any) error {
 	case EnumValue:
 		return c.codecForEnum.encodeNested(writer, value)
 	case OptionValue:
-		return c.codecForOption.encodeNested(writer, value)
+		return value.encodeNested(writer)
 	case InputListValue:
 		return c.codecForList.encodeNested(writer, value)
 	default:
@@ -147,7 +142,7 @@ func (c *codec) doEncodeTopLevel(writer io.Writer, value any) error {
 	case EnumValue:
 		return c.codecForEnum.encodeTopLevel(writer, value)
 	case OptionValue:
-		return c.codecForOption.encodeTopLevel(writer, value)
+		return value.encodeTopLevel(writer)
 	case InputListValue:
 		return c.codecForList.encodeTopLevel(writer, value)
 	default:
@@ -201,7 +196,7 @@ func (c *codec) doDecodeNested(reader io.Reader, value any) error {
 	case *EnumValue:
 		return c.codecForEnum.decodeNested(reader, value)
 	case *OptionValue:
-		return c.codecForOption.decodeNested(reader, value)
+		return value.decodeNested(reader)
 	case *OutputListValue:
 		return c.codecForList.decodeNested(reader, value)
 	default:
@@ -240,9 +235,9 @@ func (c *codec) doDecodeTopLevel(data []byte, value any) error {
 	case *I64Value:
 		return value.decodeTopLevel(data)
 	case *BigUIntValue:
-		value.decodeTopLevel(data)
+		return value.decodeTopLevel(data)
 	case *BigIntValue:
-		value.decodeTopLevel(data)
+		return value.decodeTopLevel(data)
 	case *AddressValue:
 		return value.decodeTopLevel(data)
 	case *StringValue:
@@ -254,12 +249,10 @@ func (c *codec) doDecodeTopLevel(data []byte, value any) error {
 	case *EnumValue:
 		return c.codecForEnum.decodeTopLevel(data, value)
 	case *OptionValue:
-		return c.codecForOption.decodeTopLevel(data, value)
+		return value.decodeTopLevel(data)
 	case *OutputListValue:
 		return c.codecForList.decodeTopLevel(data, value)
 	default:
 		return fmt.Errorf("unsupported type for top-level decoding: %T", value)
 	}
-
-	return nil
 }

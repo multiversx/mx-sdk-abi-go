@@ -15,7 +15,7 @@ func TestCodecForOption(t *testing.T) {
 		}, "00")
 
 		testEncodeNested(t, codec, OptionValue{
-			Value: U16Value{Value: 0x08},
+			Value: &U16Value{Value: 0x08},
 		}, "010008")
 	})
 
@@ -25,7 +25,7 @@ func TestCodecForOption(t *testing.T) {
 		}, "")
 
 		testEncodeTopLevel(t, codec, OptionValue{
-			Value: U16Value{Value: 0x08},
+			Value: &U16Value{Value: 0x08},
 		}, "010008")
 	})
 

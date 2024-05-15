@@ -56,6 +56,7 @@ func (value *BigUIntValue) decodeNested(reader io.Reader) error {
 	return nil
 }
 
-func (value *BigUIntValue) decodeTopLevel(data []byte) {
+func (value *BigUIntValue) decodeTopLevel(data []byte) error {
 	value.Value = big.NewInt(0).SetBytes(data)
+	return nil
 }

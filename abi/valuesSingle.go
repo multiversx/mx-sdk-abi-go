@@ -1,10 +1,5 @@
 package abi
 
-// OptionValue is a wrapper for an option value
-type OptionValue struct {
-	Value any
-}
-
 // Field is a field in a struct, enum etc.
 type Field struct {
 	Name  string
