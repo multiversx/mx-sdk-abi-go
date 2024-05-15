@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func TestCodecForString(t *testing.T) {
+func TestStringValue(t *testing.T) {
 	codec, _ := newCodec(argsNewCodec{
 		pubKeyLength: 32,
 	})
