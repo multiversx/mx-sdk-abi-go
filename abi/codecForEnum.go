@@ -2,14 +2,16 @@ package abi
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 )
 
 // EnumValue is an enum (discriminant and fields)
 type EnumValue struct {
-	Discriminant uint8
-	Fields       []Field
+	Discriminant   uint8
+	Fields         []Field
+	FieldsProvider func(uint8) []Field
 }
 
 // EncodeNested encodes the value in the nested form
@@ -42,6 +44,10 @@ func (value *EnumValue) EncodeTopLevel(writer io.Writer) error {
 
 // DecodeNested decodes the value from the nested form
 func (value *EnumValue) DecodeNested(reader io.Reader) error {
+	if value.FieldsProvider == nil {
+		return errors.New("cannot decode enum: fields provider is nil")
+	}
+
 	discriminant := &U8Value{}
 	err := discriminant.DecodeNested(reader)
 	if err != nil {
@@ -49,6 +55,7 @@ func (value *EnumValue) DecodeNested(reader io.Reader) error {
 	}
 
 	value.Discriminant = discriminant.Value
+	value.Fields = value.FieldsProvider(value.Discriminant)
 
 	for _, field := range value.Fields {
 		err := field.Value.DecodeNested(reader)
