@@ -41,10 +41,6 @@ func (value *ListValue) encodeItems(writer io.Writer) error {
 
 // DecodeNested decodes the value from the nested form
 func (value *ListValue) DecodeNested(reader io.Reader) error {
-	if value.ItemCreator == nil {
-		return errors.New("cannot decode list: item creator is nil")
-	}
-
 	length, err := decodeLength(reader)
 	if err != nil {
 		return err
@@ -64,10 +60,6 @@ func (value *ListValue) DecodeNested(reader io.Reader) error {
 
 // DecodeTopLevel decodes the value from the top-level form
 func (value *ListValue) DecodeTopLevel(data []byte) error {
-	if value.ItemCreator == nil {
-		return errors.New("cannot decode list: item creator is nil")
-	}
-
 	reader := bytes.NewReader(data)
 	value.Items = make([]SingleValue, 0)
 
@@ -82,6 +74,10 @@ func (value *ListValue) DecodeTopLevel(data []byte) error {
 }
 
 func (value *ListValue) decodeItem(reader io.Reader) error {
+	if value.ItemCreator == nil {
+		return errors.New("cannot decode list: item creator is nil")
+	}
+
 	newItem := value.ItemCreator()
 
 	err := newItem.DecodeNested(reader)

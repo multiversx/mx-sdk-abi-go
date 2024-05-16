@@ -42,6 +42,10 @@ func (value *OptionValue) EncodeTopLevel(writer io.Writer) error {
 
 // DecodeNested decodes the value from the nested form
 func (value *OptionValue) DecodeNested(reader io.Reader) error {
+	if value.Value == nil {
+		return fmt.Errorf("placeholder value of option should be set before decoding")
+	}
+
 	data, err := readBytesExactly(reader, 1)
 	if err != nil {
 		return err
@@ -63,6 +67,10 @@ func (value *OptionValue) DecodeNested(reader io.Reader) error {
 
 // DecodeTopLevel decodes the value from the top-level form
 func (value *OptionValue) DecodeTopLevel(data []byte) error {
+	if value.Value == nil {
+		return fmt.Errorf("placeholder value of option should be set before decoding")
+	}
+
 	if len(data) == 0 {
 		value.Value = nil
 		return nil
