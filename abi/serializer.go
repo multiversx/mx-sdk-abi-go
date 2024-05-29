@@ -14,7 +14,6 @@ type serializer struct {
 // ArgsNewSerializer defines the arguments needed for a new serializer
 type ArgsNewSerializer struct {
 	PartsSeparator string
-	PubKeyLength   int
 }
 
 // NewSerializer creates a new serializer.
