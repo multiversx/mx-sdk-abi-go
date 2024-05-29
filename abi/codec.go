@@ -2,125 +2,29 @@ package abi
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
-	"io"
-	"math"
 )
 
-type codec struct {
-	codecForBool     *codecForBool
-	codecForSmallInt *codecForSmallInt
-	codecForBigInt   *codecForBigInt
-	codecForAddress  *codecForAddress
-	codecForString   *codecForString
-	codecForBytes    *codecForBytes
-	codecForStruct   *codeForStruct
-	codecForEnum     *codecForEnum
-	codecForOption   *codecForOption
-	codecForList     *codecForList
-}
-
-// argsNewCodec defines the arguments needed for a new codec
-type argsNewCodec struct {
-	pubKeyLength int
-}
-
-// newCodec creates a new default codec which follows the rules of the MultiversX Serialization format:
+// codec is a component which follows the rules of the MultiversX Serialization format:
 // https://docs.multiversx.com/developers/data/serialization-overview
-func newCodec(args argsNewCodec) (*codec, error) {
-	if args.pubKeyLength <= 0 {
-		return nil, errors.New("cannot create codec: bad public key length")
-	}
-
-	codec := &codec{
-		codecForBool:     &codecForBool{},
-		codecForSmallInt: &codecForSmallInt{},
-		codecForBigInt:   &codecForBigInt{},
-		codecForAddress: &codecForAddress{
-			pubKeyLength: args.pubKeyLength,
-		},
-		codecForString: &codecForString{},
-		codecForBytes:  &codecForBytes{},
-	}
-
-	codec.codecForStruct = &codeForStruct{
-		generalCodec: codec,
-	}
-
-	codec.codecForEnum = &codecForEnum{
-		generalCodec: codec,
-	}
-
-	codec.codecForOption = &codecForOption{
-		generalCodec: codec,
-	}
-
-	codec.codecForList = &codecForList{
-		generalCodec: codec,
-	}
-
-	return codec, nil
+type codec struct {
 }
 
 // EncodeNested encodes the given value following the nested encoding rules
-func (c *codec) EncodeNested(value any) ([]byte, error) {
+func (c *codec) EncodeNested(value SingleValue) ([]byte, error) {
 	buffer := bytes.NewBuffer(nil)
-	err := c.doEncodeNested(buffer, value)
+	err := value.EncodeNested(buffer)
 	if err != nil {
 		return nil, err
 	}
 
 	return buffer.Bytes(), nil
-}
-
-func (c *codec) doEncodeNested(writer io.Writer, value any) error {
-	switch value := value.(type) {
-	case BoolValue:
-		return c.codecForBool.encodeNested(writer, value)
-	case U8Value:
-		return c.codecForSmallInt.encodeNested(writer, value.Value, 1)
-	case U16Value:
-		return c.codecForSmallInt.encodeNested(writer, value.Value, 2)
-	case U32Value:
-		return c.codecForSmallInt.encodeNested(writer, value.Value, 4)
-	case U64Value:
-		return c.codecForSmallInt.encodeNested(writer, value.Value, 8)
-	case I8Value:
-		return c.codecForSmallInt.encodeNested(writer, value.Value, 1)
-	case I16Value:
-		return c.codecForSmallInt.encodeNested(writer, value.Value, 2)
-	case I32Value:
-		return c.codecForSmallInt.encodeNested(writer, value.Value, 4)
-	case I64Value:
-		return c.codecForSmallInt.encodeNested(writer, value.Value, 8)
-	case BigUIntValue:
-		return c.codecForBigInt.encodeNestedUnsigned(writer, value.Value)
-	case BigIntValue:
-		return c.codecForBigInt.encodeNestedSigned(writer, value.Value)
-	case AddressValue:
-		return c.codecForAddress.encodeNested(writer, value)
-	case StringValue:
-		return c.codecForString.encodeNested(writer, value)
-	case BytesValue:
-		return c.codecForBytes.encodeNested(writer, value)
-	case StructValue:
-		return c.codecForStruct.encodeNested(writer, value)
-	case EnumValue:
-		return c.codecForEnum.encodeNested(writer, value)
-	case OptionValue:
-		return c.codecForOption.encodeNested(writer, value)
-	case InputListValue:
-		return c.codecForList.encodeNested(writer, value)
-	default:
-		return fmt.Errorf("unsupported type for nested encoding: %T", value)
-	}
 }
 
 // EncodeTopLevel encodes the given value following the top-level encoding rules
-func (c *codec) EncodeTopLevel(value any) ([]byte, error) {
+func (c *codec) EncodeTopLevel(value SingleValue) ([]byte, error) {
 	buffer := bytes.NewBuffer(nil)
-	err := c.doEncodeTopLevel(buffer, value)
+	err := value.EncodeTopLevel(buffer)
 	if err != nil {
 		return nil, err
 	}
@@ -128,53 +32,10 @@ func (c *codec) EncodeTopLevel(value any) ([]byte, error) {
 	return buffer.Bytes(), nil
 }
 
-func (c *codec) doEncodeTopLevel(writer io.Writer, value any) error {
-	switch value := value.(type) {
-	case BoolValue:
-		return c.codecForBool.encodeTopLevel(writer, value)
-	case U8Value:
-		return c.codecForSmallInt.encodeTopLevelUnsigned(writer, uint64(value.Value))
-	case U16Value:
-		return c.codecForSmallInt.encodeTopLevelUnsigned(writer, uint64(value.Value))
-	case U32Value:
-		return c.codecForSmallInt.encodeTopLevelUnsigned(writer, uint64(value.Value))
-	case U64Value:
-		return c.codecForSmallInt.encodeTopLevelUnsigned(writer, value.Value)
-	case I8Value:
-		return c.codecForSmallInt.encodeTopLevelSigned(writer, int64(value.Value))
-	case I16Value:
-		return c.codecForSmallInt.encodeTopLevelSigned(writer, int64(value.Value))
-	case I32Value:
-		return c.codecForSmallInt.encodeTopLevelSigned(writer, int64(value.Value))
-	case I64Value:
-		return c.codecForSmallInt.encodeTopLevelSigned(writer, value.Value)
-	case BigUIntValue:
-		return c.codecForBigInt.encodeTopLevelUnsigned(writer, value.Value)
-	case BigIntValue:
-		return c.codecForBigInt.encodeTopLevelSigned(writer, value.Value)
-	case AddressValue:
-		return c.codecForAddress.encodeTopLevel(writer, value)
-	case StringValue:
-		return c.codecForString.encodeTopLevel(writer, value)
-	case BytesValue:
-		return c.codecForBytes.encodeTopLevel(writer, value)
-	case StructValue:
-		return c.codecForStruct.encodeTopLevel(writer, value)
-	case EnumValue:
-		return c.codecForEnum.encodeTopLevel(writer, value)
-	case OptionValue:
-		return c.codecForOption.encodeTopLevel(writer, value)
-	case InputListValue:
-		return c.codecForList.encodeTopLevel(writer, value)
-	default:
-		return fmt.Errorf("unsupported type for top-level encoding: %T", value)
-	}
-}
-
 // DecodeNested decodes the given data into the provided object following the nested decoding rules
-func (c *codec) DecodeNested(data []byte, value any) error {
+func (c *codec) DecodeNested(data []byte, value SingleValue) error {
 	reader := bytes.NewReader(data)
-	err := c.doDecodeNested(reader, value)
+	err := value.DecodeNested(reader)
 	if err != nil {
 		return fmt.Errorf("cannot decode (nested) %T, because of: %w", value, err)
 	}
@@ -182,154 +43,11 @@ func (c *codec) DecodeNested(data []byte, value any) error {
 	return nil
 }
 
-func (c *codec) doDecodeNested(reader io.Reader, value any) error {
-	switch value := value.(type) {
-	case *BoolValue:
-		return c.codecForBool.decodeNested(reader, value)
-	case *U8Value:
-		return c.codecForSmallInt.decodeNested(reader, &value.Value, 1)
-	case *U16Value:
-		return c.codecForSmallInt.decodeNested(reader, &value.Value, 2)
-	case *U32Value:
-		return c.codecForSmallInt.decodeNested(reader, &value.Value, 4)
-	case *U64Value:
-		return c.codecForSmallInt.decodeNested(reader, &value.Value, 8)
-	case *I8Value:
-		return c.codecForSmallInt.decodeNested(reader, &value.Value, 1)
-	case *I16Value:
-		return c.codecForSmallInt.decodeNested(reader, &value.Value, 2)
-	case *I32Value:
-		return c.codecForSmallInt.decodeNested(reader, &value.Value, 4)
-	case *I64Value:
-		return c.codecForSmallInt.decodeNested(reader, &value.Value, 8)
-	case *BigUIntValue:
-		n, err := c.codecForBigInt.decodeNestedUnsigned(reader)
-		if err != nil {
-			return err
-		}
-
-		value.Value = n
-		return nil
-	case *BigIntValue:
-		n, err := c.codecForBigInt.decodeNestedSigned(reader)
-		if err != nil {
-			return err
-		}
-
-		value.Value = n
-		return nil
-	case *AddressValue:
-		return c.codecForAddress.decodeNested(reader, value)
-	case *StringValue:
-		return c.codecForString.decodeNested(reader, value)
-	case *BytesValue:
-		return c.codecForBytes.decodeNested(reader, value)
-	case *StructValue:
-		return c.codecForStruct.decodeNested(reader, value)
-	case *EnumValue:
-		return c.codecForEnum.decodeNested(reader, value)
-	case *OptionValue:
-		return c.codecForOption.decodeNested(reader, value)
-	case *OutputListValue:
-		return c.codecForList.decodeNested(reader, value)
-	default:
-		return fmt.Errorf("unsupported type for nested decoding: %T", value)
-	}
-}
-
 // DecodeTopLevel decodes the given data into the provided object following the top-level decoding rules
-func (c *codec) DecodeTopLevel(data []byte, value any) error {
-	err := c.doDecodeTopLevel(data, value)
+func (c *codec) DecodeTopLevel(data []byte, value SingleValue) error {
+	err := value.DecodeTopLevel(data)
 	if err != nil {
 		return fmt.Errorf("cannot decode (top-level) %T, because of: %w", value, err)
-	}
-
-	return nil
-}
-
-func (c *codec) doDecodeTopLevel(data []byte, value any) error {
-	switch value := value.(type) {
-	case *BoolValue:
-		return c.codecForBool.decodeTopLevel(data, value)
-	case *U8Value:
-		n, err := c.codecForSmallInt.decodeTopLevelUnsigned(data, math.MaxUint8)
-		if err != nil {
-			return err
-		}
-
-		value.Value = uint8(n)
-	case *U16Value:
-		n, err := c.codecForSmallInt.decodeTopLevelUnsigned(data, math.MaxUint16)
-		if err != nil {
-			return err
-		}
-
-		value.Value = uint16(n)
-	case *U32Value:
-		n, err := c.codecForSmallInt.decodeTopLevelUnsigned(data, math.MaxUint32)
-		if err != nil {
-			return err
-		}
-
-		value.Value = uint32(n)
-	case *U64Value:
-		n, err := c.codecForSmallInt.decodeTopLevelUnsigned(data, math.MaxUint64)
-		if err != nil {
-			return err
-		}
-
-		value.Value = uint64(n)
-	case *I8Value:
-		n, err := c.codecForSmallInt.decodeTopLevelSigned(data, math.MaxInt8)
-		if err != nil {
-			return err
-		}
-
-		value.Value = int8(n)
-	case *I16Value:
-		n, err := c.codecForSmallInt.decodeTopLevelSigned(data, math.MaxInt16)
-		if err != nil {
-			return err
-		}
-
-		value.Value = int16(n)
-	case *I32Value:
-		n, err := c.codecForSmallInt.decodeTopLevelSigned(data, math.MaxInt32)
-		if err != nil {
-			return err
-		}
-
-		value.Value = int32(n)
-
-	case *I64Value:
-		n, err := c.codecForSmallInt.decodeTopLevelSigned(data, math.MaxInt64)
-		if err != nil {
-			return err
-		}
-
-		value.Value = int64(n)
-	case *BigUIntValue:
-		n := c.codecForBigInt.decodeTopLevelUnsigned(data)
-		value.Value = n
-	case *BigIntValue:
-		n := c.codecForBigInt.decodeTopLevelSigned(data)
-		value.Value = n
-	case *AddressValue:
-		return c.codecForAddress.decodeTopLevel(data, value)
-	case *StringValue:
-		return c.codecForString.decodeTopLevel(data, value)
-	case *BytesValue:
-		return c.codecForBytes.decodeTopLevel(data, value)
-	case *StructValue:
-		return c.codecForStruct.decodeTopLevel(data, value)
-	case *EnumValue:
-		return c.codecForEnum.decodeTopLevel(data, value)
-	case *OptionValue:
-		return c.codecForOption.decodeTopLevel(data, value)
-	case *OutputListValue:
-		return c.codecForList.decodeTopLevel(data, value)
-	default:
-		return fmt.Errorf("unsupported type for top-level decoding: %T", value)
 	}
 
 	return nil
