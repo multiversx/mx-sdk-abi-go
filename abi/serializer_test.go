@@ -12,7 +12,6 @@ import (
 func TestSerializer_Serialize(t *testing.T) {
 	serializer, err := NewSerializer(ArgsNewSerializer{
 		PartsSeparator: "@",
-		PubKeyLength:   32,
 	})
 	require.NoError(t, err)
 
@@ -178,7 +177,6 @@ func TestSerializer_Serialize(t *testing.T) {
 func TestSerializer_Deserialize(t *testing.T) {
 	serializer, err := NewSerializer(ArgsNewSerializer{
 		PartsSeparator: "@",
-		PubKeyLength:   32,
 	})
 	require.NoError(t, err)
 
@@ -402,7 +400,6 @@ func TestSerializer_Deserialize(t *testing.T) {
 func TestSerializer_InRealWorldScenarios(t *testing.T) {
 	serializer, err := NewSerializer(ArgsNewSerializer{
 		PartsSeparator: "@",
-		PubKeyLength:   32,
 	})
 	require.NoError(t, err)
 
