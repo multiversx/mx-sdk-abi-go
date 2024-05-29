@@ -6,13 +6,15 @@ import (
 	"io"
 )
 
-type codeForStruct struct {
-	generalCodec generalCodec
+// StructValue is a struct (collection of fields)
+type StructValue struct {
+	Fields []Field
 }
 
-func (c *codeForStruct) encodeNested(writer io.Writer, value StructValue) error {
+// EncodeNested encodes the value in the nested form
+func (value *StructValue) EncodeNested(writer io.Writer) error {
 	for _, field := range value.Fields {
-		err := c.generalCodec.doEncodeNested(writer, field.Value)
+		err := field.Value.EncodeNested(writer)
 		if err != nil {
 			return fmt.Errorf("cannot encode field '%s' of struct, because of: %w", field.Name, err)
 		}
@@ -21,13 +23,15 @@ func (c *codeForStruct) encodeNested(writer io.Writer, value StructValue) error 
 	return nil
 }
 
-func (c *codeForStruct) encodeTopLevel(writer io.Writer, value StructValue) error {
-	return c.encodeNested(writer, value)
+// EncodeTopLevel encodes the value in the top-level form
+func (value *StructValue) EncodeTopLevel(writer io.Writer) error {
+	return value.EncodeNested(writer)
 }
 
-func (c *codeForStruct) decodeNested(reader io.Reader, value *StructValue) error {
+// DecodeNested decodes the value from the nested form
+func (value *StructValue) DecodeNested(reader io.Reader) error {
 	for _, field := range value.Fields {
-		err := c.generalCodec.doDecodeNested(reader, field.Value)
+		err := field.Value.DecodeNested(reader)
 		if err != nil {
 			return fmt.Errorf("cannot decode field '%s' of struct, because of: %w", field.Name, err)
 		}
@@ -36,7 +40,8 @@ func (c *codeForStruct) decodeNested(reader io.Reader, value *StructValue) error
 	return nil
 }
 
-func (c *codeForStruct) decodeTopLevel(data []byte, value *StructValue) error {
+// DecodeTopLevel decodes the value from the top-level form
+func (value *StructValue) DecodeTopLevel(data []byte) error {
 	reader := bytes.NewReader(data)
-	return c.decodeNested(reader, value)
+	return value.DecodeNested(reader)
 }

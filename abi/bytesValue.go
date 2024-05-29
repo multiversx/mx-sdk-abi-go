@@ -4,10 +4,13 @@ import (
 	"io"
 )
 
-type codecForBytes struct {
+// BytesValue is a wrapper for a byte slice
+type BytesValue struct {
+	Value []byte
 }
 
-func (c *codecForBytes) encodeNested(writer io.Writer, value BytesValue) error {
+// EncodeNested encodes the value in the nested form
+func (value *BytesValue) EncodeNested(writer io.Writer) error {
 	err := encodeLength(writer, uint32(len(value.Value)))
 	if err != nil {
 		return err
@@ -17,12 +20,14 @@ func (c *codecForBytes) encodeNested(writer io.Writer, value BytesValue) error {
 	return err
 }
 
-func (c *codecForBytes) encodeTopLevel(writer io.Writer, value BytesValue) error {
+// EncodeTopLevel encodes the value in the top-level form
+func (value *BytesValue) EncodeTopLevel(writer io.Writer) error {
 	_, err := writer.Write(value.Value)
 	return err
 }
 
-func (c *codecForBytes) decodeNested(reader io.Reader, value *BytesValue) error {
+// DecodeNested decodes the value from the nested form
+func (value *BytesValue) DecodeNested(reader io.Reader) error {
 	length, err := decodeLength(reader)
 	if err != nil {
 		return err
@@ -37,7 +42,8 @@ func (c *codecForBytes) decodeNested(reader io.Reader, value *BytesValue) error 
 	return nil
 }
 
-func (c *codecForBytes) decodeTopLevel(data []byte, value *BytesValue) error {
+// DecodeTopLevel decodes the value from the top-level form
+func (value *BytesValue) DecodeTopLevel(data []byte) error {
 	value.Value = data
 	return nil
 }
