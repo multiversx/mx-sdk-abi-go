@@ -14,7 +14,6 @@ type serializer struct {
 // ArgsNewSerializer defines the arguments needed for a new serializer
 type ArgsNewSerializer struct {
 	PartsSeparator string
-	PubKeyLength   int
 }
 
 // NewSerializer creates a new serializer.
@@ -25,12 +24,7 @@ func NewSerializer(args ArgsNewSerializer) (*serializer, error) {
 		return nil, errors.New("cannot create serializer: parts separator must not be empty")
 	}
 
-	codec, err := newCodec(argsNewCodec{
-		pubKeyLength: args.PubKeyLength,
-	})
-	if err != nil {
-		return nil, err
-	}
+	codec := &codec{}
 
 	return &serializer{
 		codec:          codec,
@@ -85,9 +79,11 @@ func (s *serializer) doSerialize(partsHolder *partsHolder, inputValues []any) er
 			}
 
 			err = s.serializeInputVariadicValues(partsHolder, value)
-		default:
+		case SingleValue:
 			partsHolder.appendEmptyPart()
-			err = s.serializeDirectlyEncodableValue(partsHolder, value)
+			err = s.serializeSingleValue(partsHolder, value)
+		default:
+			return fmt.Errorf("unsupported type for serialization: %T", value)
 		}
 
 		if err != nil {
@@ -144,9 +140,10 @@ func (s *serializer) doDeserialize(partsHolder *partsHolder, outputValues []any)
 				return errors.New("variadic values must be last among output values")
 			}
 
-			err = s.deserializeOutputVariadicValues(partsHolder, value)
+		case SingleValue:
+			err = s.deserializeSingleValue(partsHolder, value)
 		default:
-			err = s.deserializeDirectlyEncodableValue(partsHolder, value)
+			return fmt.Errorf("unsupported type for deserialization: %T", value)
 		}
 
 		if err != nil {
@@ -187,7 +184,7 @@ func (s *serializer) serializeInputVariadicValues(partsHolder *partsHolder, valu
 	return nil
 }
 
-func (s *serializer) serializeDirectlyEncodableValue(partsHolder *partsHolder, value any) error {
+func (s *serializer) serializeSingleValue(partsHolder *partsHolder, value SingleValue) error {
 	data, err := s.codec.EncodeTopLevel(value)
 	if err != nil {
 		return err
@@ -240,7 +237,7 @@ func (s *serializer) deserializeOutputVariadicValues(partsHolder *partsHolder, v
 	return nil
 }
 
-func (s *serializer) deserializeDirectlyEncodableValue(partsHolder *partsHolder, value any) error {
+func (s *serializer) deserializeSingleValue(partsHolder *partsHolder, value SingleValue) error {
 	part, err := partsHolder.readWholeFocusedPart()
 	if err != nil {
 		return err
