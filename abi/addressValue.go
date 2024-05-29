@@ -5,12 +5,14 @@ import (
 	"io"
 )
 
-type codecForAddress struct {
-	pubKeyLength int
+// AddressValue is a wrapper for an address
+type AddressValue struct {
+	Value []byte
 }
 
-func (c *codecForAddress) encodeNested(writer io.Writer, value AddressValue) error {
-	err := c.checkPubKeyLength(value.Value)
+// EncodeNested encodes the value in the nested form
+func (value *AddressValue) EncodeNested(writer io.Writer) error {
+	err := value.checkPubKeyLength(value.Value)
 	if err != nil {
 		return err
 	}
@@ -19,12 +21,14 @@ func (c *codecForAddress) encodeNested(writer io.Writer, value AddressValue) err
 	return err
 }
 
-func (c *codecForAddress) encodeTopLevel(writer io.Writer, value AddressValue) error {
-	return c.encodeNested(writer, value)
+// EncodeTopLevel encodes the value in the top-level form
+func (value *AddressValue) EncodeTopLevel(writer io.Writer) error {
+	return value.EncodeNested(writer)
 }
 
-func (c *codecForAddress) decodeNested(reader io.Reader, value *AddressValue) error {
-	data, err := readBytesExactly(reader, c.pubKeyLength)
+// DecodeNested decodes the value from the nested form
+func (value *AddressValue) DecodeNested(reader io.Reader) error {
+	data, err := readBytesExactly(reader, pubKeyLength)
 	if err != nil {
 		return err
 	}
@@ -33,8 +37,9 @@ func (c *codecForAddress) decodeNested(reader io.Reader, value *AddressValue) er
 	return nil
 }
 
-func (c *codecForAddress) decodeTopLevel(data []byte, value *AddressValue) error {
-	err := c.checkPubKeyLength(data)
+// DecodeTopLevel decodes the value from the top-level form
+func (value *AddressValue) DecodeTopLevel(data []byte) error {
+	err := value.checkPubKeyLength(data)
 	if err != nil {
 		return err
 	}
@@ -43,8 +48,8 @@ func (c *codecForAddress) decodeTopLevel(data []byte, value *AddressValue) error
 	return nil
 }
 
-func (c *codecForAddress) checkPubKeyLength(pubkey []byte) error {
-	if len(pubkey) != c.pubKeyLength {
+func (value *AddressValue) checkPubKeyLength(pubkey []byte) error {
+	if len(pubkey) != pubKeyLength {
 		return fmt.Errorf("public key (address) has invalid length: %d", len(pubkey))
 	}
 

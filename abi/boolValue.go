@@ -5,10 +5,13 @@ import (
 	"io"
 )
 
-type codecForBool struct {
+// BoolValue is a wrapper for a boolean
+type BoolValue struct {
+	Value bool
 }
 
-func (c *codecForBool) encodeNested(writer io.Writer, value BoolValue) error {
+// EncodeNested encodes the value in the nested form
+func (value *BoolValue) EncodeNested(writer io.Writer) error {
 	if value.Value {
 		_, err := writer.Write([]byte{trueAsByte})
 		return err
@@ -18,7 +21,8 @@ func (c *codecForBool) encodeNested(writer io.Writer, value BoolValue) error {
 	return err
 }
 
-func (c *codecForBool) encodeTopLevel(writer io.Writer, value BoolValue) error {
+// EncodeTopLevel encodes the value in the top-level form
+func (value *BoolValue) EncodeTopLevel(writer io.Writer) error {
 	if !value.Value {
 		// For "false", write nothing.
 		return nil
@@ -28,13 +32,14 @@ func (c *codecForBool) encodeTopLevel(writer io.Writer, value BoolValue) error {
 	return err
 }
 
-func (c *codecForBool) decodeNested(reader io.Reader, value *BoolValue) error {
+// DecodeNested decodes the value from the nested form
+func (value *BoolValue) DecodeNested(reader io.Reader) error {
 	data, err := readBytesExactly(reader, 1)
 	if err != nil {
 		return err
 	}
 
-	value.Value, err = c.byteToBool(data[0])
+	value.Value, err = value.byteToBool(data[0])
 	if err != nil {
 		return err
 	}
@@ -42,14 +47,15 @@ func (c *codecForBool) decodeNested(reader io.Reader, value *BoolValue) error {
 	return nil
 }
 
-func (c *codecForBool) decodeTopLevel(data []byte, value *BoolValue) error {
+// DecodeTopLevel decodes the value from the top-level form
+func (value *BoolValue) DecodeTopLevel(data []byte) error {
 	if len(data) == 0 {
 		value.Value = false
 		return nil
 	}
 
 	if len(data) == 1 {
-		boolValue, err := c.byteToBool(data[0])
+		boolValue, err := value.byteToBool(data[0])
 		if err != nil {
 			return err
 		}
@@ -61,7 +67,7 @@ func (c *codecForBool) decodeTopLevel(data []byte, value *BoolValue) error {
 	return fmt.Errorf("unexpected boolean value: %v", data)
 }
 
-func (c *codecForBool) byteToBool(data uint8) (bool, error) {
+func (value *BoolValue) byteToBool(data uint8) (bool, error) {
 	switch data {
 	case trueAsByte:
 		return true, nil
