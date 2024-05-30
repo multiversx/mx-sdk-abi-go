@@ -551,30 +551,36 @@ func TestSerializer_InRealWorldScenarios(t *testing.T) {
 			},
 		}
 
-		action := EnumValue{
-			Fields: []Field{
-				{
-					Name:  "to",
-					Value: &actionTo,
-				},
-				{
-					Name:  "egld_amount",
-					Value: &actionEgldAmount,
-				},
-				{
-					Name: "opt_gas_limit",
-					Value: &OptionValue{
-						Value: &actionGasLimit,
-					},
-				},
-				{
-					Name:  "endpoint_name",
-					Value: &actionEndpointName,
-				},
-				{
-					Name:  "arguments",
-					Value: &actionArguments,
-				},
+		action := &EnumValue{
+			FieldsProvider: func(discriminant uint8) []Field {
+				if discriminant == 5 {
+					return []Field{
+						{
+							Name:  "to",
+							Value: actionTo,
+						},
+						{
+							Name:  "egld_amount",
+							Value: actionEgldAmount,
+						},
+						{
+							Name: "opt_gas_limit",
+							Value: &OptionValue{
+								Value: actionGasLimit,
+							},
+						},
+						{
+							Name:  "endpoint_name",
+							Value: actionEndpointName,
+						},
+						{
+							Name:  "arguments",
+							Value: actionArguments,
+						},
+					}
+				}
+
+				return nil
 			},
 		}
 
