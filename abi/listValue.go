@@ -27,7 +27,6 @@ func (value *ListValue) EncodeTopLevel(writer io.Writer) error {
 	return value.encodeItems(writer)
 }
 
-// DecodeNested decodes the value from the nested form
 func (value *ListValue) encodeItems(writer io.Writer) error {
 	for _, item := range value.Items {
 		err := item.EncodeNested(writer)
