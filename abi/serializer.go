@@ -3,6 +3,7 @@ package abi
 import (
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"strings"
 )
 
@@ -70,15 +71,17 @@ func (s *serializer) doSerialize(partsHolder *partsHolder, inputValues []any) er
 				return errors.New("an optional value must be last among input values")
 			}
 
-			err = s.serializeOptionalValue(partsHolder, value)
+			if value.Value != nil {
+				err = s.doSerialize(partsHolder, []any{value.Value})
+			}
 		case *MultiValue:
-			err = s.serializeMultiValue(partsHolder, value)
+			err = s.doSerialize(partsHolder, value.Items)
 		case *VariadicValues:
 			if i != len(inputValues)-1 {
 				return errors.New("variadic values must be last among input values")
 			}
 
-			err = s.serializeVariadicValues(partsHolder, value)
+			err = s.doSerialize(partsHolder, value.Items)
 		case SingleValue:
 			partsHolder.appendEmptyPart()
 			err = s.serializeSingleValue(partsHolder, value)
@@ -132,9 +135,13 @@ func (s *serializer) doDeserialize(partsHolder *partsHolder, outputValues []any)
 				return errors.New("an optional value must be last among output values")
 			}
 
-			err = s.deserializeOptionalValue(partsHolder, value)
+			if partsHolder.isFocusedBeyondLastPart() {
+				value.Value = nil
+			} else {
+				err = s.doDeserialize(partsHolder, []any{value.Value})
+			}
 		case *MultiValue:
-			err = s.deserializeMultiValue(partsHolder, value)
+			err = s.doDeserialize(partsHolder, value.Items)
 		case *VariadicValues:
 			if i != len(outputValues)-1 {
 				return errors.New("variadic values must be last among output values")
@@ -155,36 +162,6 @@ func (s *serializer) doDeserialize(partsHolder *partsHolder, outputValues []any)
 	return nil
 }
 
-func (s *serializer) serializeOptionalValue(partsHolder *partsHolder, value *OptionalValue) error {
-	if value.Value == nil {
-		return nil
-	}
-
-	return s.doSerialize(partsHolder, []any{value.Value})
-}
-
-func (s *serializer) serializeMultiValue(partsHolder *partsHolder, value *MultiValue) error {
-	for _, item := range value.Items {
-		err := s.doSerialize(partsHolder, []any{item})
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (s *serializer) serializeVariadicValues(partsHolder *partsHolder, value *VariadicValues) error {
-	for _, item := range value.Items {
-		err := s.doSerialize(partsHolder, []any{item})
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
 func (s *serializer) serializeSingleValue(partsHolder *partsHolder, value SingleValue) error {
 	data, err := s.codec.EncodeTopLevel(value)
 	if err != nil {
@@ -192,31 +169,6 @@ func (s *serializer) serializeSingleValue(partsHolder *partsHolder, value Single
 	}
 
 	return partsHolder.appendToLastPart(data)
-}
-
-func (s *serializer) deserializeOptionalValue(partsHolder *partsHolder, value *OptionalValue) error {
-	for partsHolder.isFocusedBeyondLastPart() {
-		value.Value = nil
-		return nil
-	}
-
-	err := s.doDeserialize(partsHolder, []any{value.Value})
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (s *serializer) deserializeMultiValue(partsHolder *partsHolder, value *MultiValue) error {
-	for _, item := range value.Items {
-		err := s.doDeserialize(partsHolder, []any{item})
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
 
 func (s *serializer) deserializeVariadicValues(partsHolder *partsHolder, value *VariadicValues) error {
