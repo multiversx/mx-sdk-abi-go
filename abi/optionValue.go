@@ -6,11 +6,13 @@ import (
 	"io"
 )
 
-type codecForOption struct {
-	generalCodec generalCodec
+// OptionValue is a wrapper for an option value
+type OptionValue struct {
+	Value SingleValue
 }
 
-func (c *codecForOption) encodeNested(writer io.Writer, value OptionValue) error {
+// EncodeNested encodes the value in the nested form
+func (value *OptionValue) EncodeNested(writer io.Writer) error {
 	if value.Value == nil {
 		_, err := writer.Write([]byte{optionMarkerForAbsentValue})
 		return err
@@ -21,10 +23,11 @@ func (c *codecForOption) encodeNested(writer io.Writer, value OptionValue) error
 		return err
 	}
 
-	return c.generalCodec.doEncodeNested(writer, value.Value)
+	return value.Value.EncodeNested(writer)
 }
 
-func (c *codecForOption) encodeTopLevel(writer io.Writer, value OptionValue) error {
+// EncodeTopLevel encodes the value in the top-level form
+func (value *OptionValue) EncodeTopLevel(writer io.Writer) error {
 	if value.Value == nil {
 		return nil
 	}
@@ -34,10 +37,15 @@ func (c *codecForOption) encodeTopLevel(writer io.Writer, value OptionValue) err
 		return err
 	}
 
-	return c.generalCodec.doEncodeNested(writer, value.Value)
+	return value.Value.EncodeNested(writer)
 }
 
-func (c *codecForOption) decodeNested(reader io.Reader, value *OptionValue) error {
+// DecodeNested decodes the value from the nested form
+func (value *OptionValue) DecodeNested(reader io.Reader) error {
+	if value.Value == nil {
+		return fmt.Errorf("placeholder value of option should be set before decoding")
+	}
+
 	data, err := readBytesExactly(reader, 1)
 	if err != nil {
 		return err
@@ -51,13 +59,18 @@ func (c *codecForOption) decodeNested(reader io.Reader, value *OptionValue) erro
 	}
 
 	if firstByte == optionMarkerForPresentValue {
-		return c.generalCodec.doDecodeNested(reader, value.Value)
+		return value.Value.DecodeNested(reader)
 	}
 
 	return fmt.Errorf("invalid first byte for nested encoded option: %d", firstByte)
 }
 
-func (c *codecForOption) decodeTopLevel(data []byte, value *OptionValue) error {
+// DecodeTopLevel decodes the value from the top-level form
+func (value *OptionValue) DecodeTopLevel(data []byte) error {
+	if value.Value == nil {
+		return fmt.Errorf("placeholder value of option should be set before decoding")
+	}
+
 	if len(data) == 0 {
 		value.Value = nil
 		return nil
@@ -71,5 +84,5 @@ func (c *codecForOption) decodeTopLevel(data []byte, value *OptionValue) error {
 	}
 
 	reader := bytes.NewReader(dataAfterFirstByte)
-	return c.generalCodec.doDecodeNested(reader, value.Value)
+	return value.Value.DecodeNested(reader)
 }

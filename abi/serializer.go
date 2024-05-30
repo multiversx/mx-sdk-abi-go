@@ -3,6 +3,7 @@ package abi
 import (
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"strings"
 )
 
@@ -14,7 +15,6 @@ type serializer struct {
 // ArgsNewSerializer defines the arguments needed for a new serializer
 type ArgsNewSerializer struct {
 	PartsSeparator string
-	PubKeyLength   int
 }
 
 // NewSerializer creates a new serializer.
@@ -25,12 +25,7 @@ func NewSerializer(args ArgsNewSerializer) (*serializer, error) {
 		return nil, errors.New("cannot create serializer: parts separator must not be empty")
 	}
 
-	codec, err := newCodec(argsNewCodec{
-		pubKeyLength: args.PubKeyLength,
-	})
-	if err != nil {
-		return nil, err
-	}
+	codec := &codec{}
 
 	return &serializer{
 		codec:          codec,
@@ -68,7 +63,7 @@ func (s *serializer) doSerialize(partsHolder *partsHolder, inputValues []any) er
 		}
 
 		switch value := value.(type) {
-		case InputOptionalValue:
+		case *OptionalValue:
 			if i != len(inputValues)-1 {
 				// Usage of multiple optional values is not recommended:
 				// https://docs.multiversx.com/developers/data/multi-values
@@ -76,18 +71,22 @@ func (s *serializer) doSerialize(partsHolder *partsHolder, inputValues []any) er
 				return errors.New("an optional value must be last among input values")
 			}
 
-			err = s.serializeInputOptionalValue(partsHolder, value)
-		case InputMultiValue:
-			err = s.serializeInputMultiValue(partsHolder, value)
-		case InputVariadicValues:
+			if value.Value != nil {
+				err = s.doSerialize(partsHolder, []any{value.Value})
+			}
+		case *MultiValue:
+			err = s.doSerialize(partsHolder, value.Items)
+		case *VariadicValues:
 			if i != len(inputValues)-1 {
 				return errors.New("variadic values must be last among input values")
 			}
 
-			err = s.serializeInputVariadicValues(partsHolder, value)
-		default:
+			err = s.doSerialize(partsHolder, value.Items)
+		case SingleValue:
 			partsHolder.appendEmptyPart()
-			err = s.serializeDirectlyEncodableValue(partsHolder, value)
+			err = s.serializeSingleValue(partsHolder, value)
+		default:
+			return fmt.Errorf("unsupported type for serialization: %T", value)
 		}
 
 		if err != nil {
@@ -128,7 +127,7 @@ func (s *serializer) doDeserialize(partsHolder *partsHolder, outputValues []any)
 		}
 
 		switch value := value.(type) {
-		case *OutputOptionalValue:
+		case *OptionalValue:
 			if i != len(outputValues)-1 {
 				// Usage of multiple optional values is not recommended:
 				// https://docs.multiversx.com/developers/data/multi-values
@@ -136,17 +135,23 @@ func (s *serializer) doDeserialize(partsHolder *partsHolder, outputValues []any)
 				return errors.New("an optional value must be last among output values")
 			}
 
-			err = s.deserializeOutputOptionalValue(partsHolder, value)
-		case *OutputMultiValue:
-			err = s.deserializeOutputMultiValue(partsHolder, value)
-		case *OutputVariadicValues:
+			if partsHolder.isFocusedBeyondLastPart() {
+				value.Value = nil
+			} else {
+				err = s.doDeserialize(partsHolder, []any{value.Value})
+			}
+		case *MultiValue:
+			err = s.doDeserialize(partsHolder, value.Items)
+		case *VariadicValues:
 			if i != len(outputValues)-1 {
 				return errors.New("variadic values must be last among output values")
 			}
 
-			err = s.deserializeOutputVariadicValues(partsHolder, value)
+			err = s.deserializeVariadicValues(partsHolder, value)
+		case SingleValue:
+			err = s.deserializeSingleValue(partsHolder, value)
 		default:
-			err = s.deserializeDirectlyEncodableValue(partsHolder, value)
+			return fmt.Errorf("unsupported type for deserialization: %T", value)
 		}
 
 		if err != nil {
@@ -157,37 +162,7 @@ func (s *serializer) doDeserialize(partsHolder *partsHolder, outputValues []any)
 	return nil
 }
 
-func (s *serializer) serializeInputOptionalValue(partsHolder *partsHolder, value InputOptionalValue) error {
-	if value.Value == nil {
-		return nil
-	}
-
-	return s.doSerialize(partsHolder, []any{value.Value})
-}
-
-func (s *serializer) serializeInputMultiValue(partsHolder *partsHolder, value InputMultiValue) error {
-	for _, item := range value.Items {
-		err := s.doSerialize(partsHolder, []any{item})
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (s *serializer) serializeInputVariadicValues(partsHolder *partsHolder, value InputVariadicValues) error {
-	for _, item := range value.Items {
-		err := s.doSerialize(partsHolder, []any{item})
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (s *serializer) serializeDirectlyEncodableValue(partsHolder *partsHolder, value any) error {
+func (s *serializer) serializeSingleValue(partsHolder *partsHolder, value SingleValue) error {
 	data, err := s.codec.EncodeTopLevel(value)
 	if err != nil {
 		return err
@@ -196,32 +171,7 @@ func (s *serializer) serializeDirectlyEncodableValue(partsHolder *partsHolder, v
 	return partsHolder.appendToLastPart(data)
 }
 
-func (s *serializer) deserializeOutputOptionalValue(partsHolder *partsHolder, value *OutputOptionalValue) error {
-	for partsHolder.isFocusedBeyondLastPart() {
-		value.Value = nil
-		return nil
-	}
-
-	err := s.doDeserialize(partsHolder, []any{value.Value})
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (s *serializer) deserializeOutputMultiValue(partsHolder *partsHolder, value *OutputMultiValue) error {
-	for _, item := range value.Items {
-		err := s.doDeserialize(partsHolder, []any{item})
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (s *serializer) deserializeOutputVariadicValues(partsHolder *partsHolder, value *OutputVariadicValues) error {
+func (s *serializer) deserializeVariadicValues(partsHolder *partsHolder, value *VariadicValues) error {
 	if value.ItemCreator == nil {
 		return errors.New("cannot deserialize variadic values: item creator is nil")
 	}
@@ -240,7 +190,7 @@ func (s *serializer) deserializeOutputVariadicValues(partsHolder *partsHolder, v
 	return nil
 }
 
-func (s *serializer) deserializeDirectlyEncodableValue(partsHolder *partsHolder, value any) error {
+func (s *serializer) deserializeSingleValue(partsHolder *partsHolder, value SingleValue) error {
 	part, err := partsHolder.readWholeFocusedPart()
 	if err != nil {
 		return err
