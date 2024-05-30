@@ -2,22 +2,28 @@ package abi
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 )
 
-type codecForEnum struct {
-	generalCodec generalCodec
+// EnumValue is an enum (discriminant and fields)
+type EnumValue struct {
+	Discriminant   uint8
+	Fields         []Field
+	FieldsProvider func(uint8) []Field
 }
 
-func (c *codecForEnum) encodeNested(writer io.Writer, value EnumValue) error {
-	err := c.generalCodec.doEncodeNested(writer, U8Value{Value: value.Discriminant})
+// EncodeNested encodes the value in the nested form
+func (value *EnumValue) EncodeNested(writer io.Writer) error {
+	discriminant := U8Value{Value: value.Discriminant}
+	err := discriminant.EncodeNested(writer)
 	if err != nil {
 		return err
 	}
 
 	for _, field := range value.Fields {
-		err := c.generalCodec.doEncodeNested(writer, field.Value)
+		err := field.Value.EncodeNested(writer)
 		if err != nil {
 			return fmt.Errorf("cannot encode field '%s' of enum, because of: %w", field.Name, err)
 		}
@@ -26,26 +32,33 @@ func (c *codecForEnum) encodeNested(writer io.Writer, value EnumValue) error {
 	return nil
 }
 
-func (c *codecForEnum) encodeTopLevel(writer io.Writer, value EnumValue) error {
+// EncodeTopLevel encodes the value in the top-level form
+func (value *EnumValue) EncodeTopLevel(writer io.Writer) error {
 	if value.Discriminant == 0 && len(value.Fields) == 0 {
 		// Write nothing
 		return nil
 	}
 
-	return c.encodeNested(writer, value)
+	return value.EncodeNested(writer)
 }
 
-func (c *codecForEnum) decodeNested(reader io.Reader, value *EnumValue) error {
+// DecodeNested decodes the value from the nested form
+func (value *EnumValue) DecodeNested(reader io.Reader) error {
+	if value.FieldsProvider == nil {
+		return errors.New("cannot decode enum: fields provider is nil")
+	}
+
 	discriminant := &U8Value{}
-	err := c.generalCodec.doDecodeNested(reader, discriminant)
+	err := discriminant.DecodeNested(reader)
 	if err != nil {
 		return err
 	}
 
 	value.Discriminant = discriminant.Value
+	value.Fields = value.FieldsProvider(value.Discriminant)
 
 	for _, field := range value.Fields {
-		err := c.generalCodec.doDecodeNested(reader, field.Value)
+		err := field.Value.DecodeNested(reader)
 		if err != nil {
 			return fmt.Errorf("cannot decode field '%s' of enum, because of: %w", field.Name, err)
 		}
@@ -54,12 +67,13 @@ func (c *codecForEnum) decodeNested(reader io.Reader, value *EnumValue) error {
 	return nil
 }
 
-func (c *codecForEnum) decodeTopLevel(data []byte, value *EnumValue) error {
+// DecodeTopLevel decodes the value from the top-level form
+func (value *EnumValue) DecodeTopLevel(data []byte) error {
 	if len(data) == 0 {
 		value.Discriminant = 0
 		return nil
 	}
 
 	reader := bytes.NewReader(data)
-	return c.decodeNested(reader, value)
+	return value.DecodeNested(reader)
 }
