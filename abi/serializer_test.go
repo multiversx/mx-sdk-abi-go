@@ -12,13 +12,12 @@ import (
 func TestSerializer_Serialize(t *testing.T) {
 	serializer, err := NewSerializer(ArgsNewSerializer{
 		PartsSeparator: "@",
-		PubKeyLength:   32,
 	})
 	require.NoError(t, err)
 
 	t.Run("u8", func(t *testing.T) {
 		data, err := serializer.Serialize([]any{
-			U8Value{Value: 0x42},
+			&U8Value{Value: 0x42},
 		})
 
 		require.NoError(t, err)
@@ -27,7 +26,7 @@ func TestSerializer_Serialize(t *testing.T) {
 
 	t.Run("u16", func(t *testing.T) {
 		data, err := serializer.Serialize([]any{
-			U16Value{Value: 0x4243},
+			&U16Value{Value: 0x4243},
 		})
 
 		require.NoError(t, err)
@@ -36,8 +35,8 @@ func TestSerializer_Serialize(t *testing.T) {
 
 	t.Run("u8, u16", func(t *testing.T) {
 		data, err := serializer.Serialize([]any{
-			U8Value{Value: 0x42},
-			U16Value{Value: 0x4243},
+			&U8Value{Value: 0x42},
+			&U16Value{Value: 0x4243},
 		})
 
 		require.NoError(t, err)
@@ -46,8 +45,8 @@ func TestSerializer_Serialize(t *testing.T) {
 
 	t.Run("optional (missing)", func(t *testing.T) {
 		data, err := serializer.Serialize([]any{
-			U8Value{Value: 0x42},
-			InputOptionalValue{},
+			&U8Value{Value: 0x42},
+			&OptionalValue{},
 		})
 
 		require.NoError(t, err)
@@ -56,8 +55,8 @@ func TestSerializer_Serialize(t *testing.T) {
 
 	t.Run("optional (provided)", func(t *testing.T) {
 		data, err := serializer.Serialize([]any{
-			U8Value{Value: 0x42},
-			InputOptionalValue{Value: U8Value{Value: 0x43}},
+			&U8Value{Value: 0x42},
+			&OptionalValue{Value: &U8Value{Value: 0x43}},
 		})
 
 		require.NoError(t, err)
@@ -66,8 +65,8 @@ func TestSerializer_Serialize(t *testing.T) {
 
 	t.Run("optional: should err because optional must be last", func(t *testing.T) {
 		_, err := serializer.Serialize([]any{
-			InputOptionalValue{Value: 0x42},
-			U8Value{Value: 0x43},
+			&OptionalValue{Value: 0x42},
+			&U8Value{Value: 0x43},
 		})
 
 		require.ErrorContains(t, err, "an optional value must be last among input values")
@@ -75,11 +74,11 @@ func TestSerializer_Serialize(t *testing.T) {
 
 	t.Run("multi<u8, u16, u32>", func(t *testing.T) {
 		data, err := serializer.Serialize([]any{
-			InputMultiValue{
+			&MultiValue{
 				Items: []any{
-					U8Value{Value: 0x42},
-					U16Value{Value: 0x4243},
-					U32Value{Value: 0x42434445},
+					&U8Value{Value: 0x42},
+					&U16Value{Value: 0x4243},
+					&U32Value{Value: 0x42434445},
 				},
 			},
 		})
@@ -90,12 +89,12 @@ func TestSerializer_Serialize(t *testing.T) {
 
 	t.Run("u8, multi<u8, u16, u32>", func(t *testing.T) {
 		data, err := serializer.Serialize([]any{
-			U8Value{Value: 0x42},
-			InputMultiValue{
+			&U8Value{Value: 0x42},
+			&MultiValue{
 				Items: []any{
-					U8Value{Value: 0x42},
-					U16Value{Value: 0x4243},
-					U32Value{Value: 0x42434445},
+					&U8Value{Value: 0x42},
+					&U16Value{Value: 0x4243},
+					&U32Value{Value: 0x42434445},
 				},
 			},
 		})
@@ -106,18 +105,18 @@ func TestSerializer_Serialize(t *testing.T) {
 
 	t.Run("multi<multi<u8, u16>, multi<u8, u16>>", func(t *testing.T) {
 		data, err := serializer.Serialize([]any{
-			InputMultiValue{
+			&MultiValue{
 				Items: []any{
-					InputMultiValue{
+					&MultiValue{
 						Items: []any{
-							U8Value{Value: 0x42},
-							U16Value{Value: 0x4243},
+							&U8Value{Value: 0x42},
+							&U16Value{Value: 0x4243},
 						},
 					},
-					InputMultiValue{
+					&MultiValue{
 						Items: []any{
-							U8Value{Value: 0x44},
-							U16Value{Value: 0x4445},
+							&U8Value{Value: 0x44},
+							&U16Value{Value: 0x4445},
 						},
 					},
 				},
@@ -130,10 +129,10 @@ func TestSerializer_Serialize(t *testing.T) {
 
 	t.Run("variadic, of different types", func(t *testing.T) {
 		data, err := serializer.Serialize([]any{
-			InputVariadicValues{
+			&VariadicValues{
 				Items: []any{
-					U8Value{Value: 0x42},
-					U16Value{Value: 0x4243},
+					&U8Value{Value: 0x42},
+					&U16Value{Value: 0x4243},
 				},
 			},
 		})
@@ -147,13 +146,13 @@ func TestSerializer_Serialize(t *testing.T) {
 
 	t.Run("variadic<u8>, u8: should err because variadic must be last", func(t *testing.T) {
 		_, err := serializer.Serialize([]any{
-			InputVariadicValues{
+			&VariadicValues{
 				Items: []any{
-					U8Value{Value: 0x42},
-					U8Value{Value: 0x43},
+					&U8Value{Value: 0x42},
+					&U8Value{Value: 0x43},
 				},
 			},
-			U8Value{Value: 0x44},
+			&U8Value{Value: 0x44},
 		})
 
 		require.ErrorContains(t, err, "variadic values must be last among input values")
@@ -161,11 +160,11 @@ func TestSerializer_Serialize(t *testing.T) {
 
 	t.Run("u8, variadic<u8>", func(t *testing.T) {
 		data, err := serializer.Serialize([]any{
-			U8Value{Value: 0x41},
-			InputVariadicValues{
+			&U8Value{Value: 0x41},
+			&VariadicValues{
 				Items: []any{
-					U8Value{Value: 0x42},
-					U8Value{Value: 0x43},
+					&U8Value{Value: 0x42},
+					&U8Value{Value: 0x43},
 				},
 			},
 		})
@@ -178,7 +177,6 @@ func TestSerializer_Serialize(t *testing.T) {
 func TestSerializer_Deserialize(t *testing.T) {
 	serializer, err := NewSerializer(ArgsNewSerializer{
 		PartsSeparator: "@",
-		PubKeyLength:   32,
 	})
 	require.NoError(t, err)
 
@@ -231,7 +229,7 @@ func TestSerializer_Deserialize(t *testing.T) {
 	t.Run("optional (missing)", func(t *testing.T) {
 		outputValues := []any{
 			&U8Value{},
-			&OutputOptionalValue{},
+			&OptionalValue{},
 		}
 
 		err := serializer.Deserialize("42", outputValues)
@@ -239,14 +237,14 @@ func TestSerializer_Deserialize(t *testing.T) {
 		require.Nil(t, err)
 		require.Equal(t, []any{
 			&U8Value{Value: 0x42},
-			&OutputOptionalValue{},
+			&OptionalValue{},
 		}, outputValues)
 	})
 
 	t.Run("optional (provided)", func(t *testing.T) {
 		outputValues := []any{
 			&U8Value{},
-			&OutputOptionalValue{Value: &U8Value{}},
+			&OptionalValue{Value: &U8Value{}},
 		}
 
 		err := serializer.Deserialize("42@43", outputValues)
@@ -254,13 +252,13 @@ func TestSerializer_Deserialize(t *testing.T) {
 		require.Nil(t, err)
 		require.Equal(t, []any{
 			&U8Value{Value: 0x42},
-			&OutputOptionalValue{Value: &U8Value{Value: 0x43}},
+			&OptionalValue{Value: &U8Value{Value: 0x43}},
 		}, outputValues)
 	})
 
 	t.Run("optional: should err because optional must be last", func(t *testing.T) {
 		outputValues := []any{
-			&OutputOptionalValue{Value: &U8Value{}},
+			&OptionalValue{Value: &U8Value{}},
 			&U8Value{},
 		}
 
@@ -270,7 +268,7 @@ func TestSerializer_Deserialize(t *testing.T) {
 
 	t.Run("multi<u8, u16, u32>", func(t *testing.T) {
 		outputValues := []any{
-			&OutputMultiValue{
+			&MultiValue{
 				Items: []any{
 					&U8Value{},
 					&U16Value{},
@@ -283,7 +281,7 @@ func TestSerializer_Deserialize(t *testing.T) {
 
 		require.Nil(t, err)
 		require.Equal(t, []any{
-			&OutputMultiValue{
+			&MultiValue{
 				Items: []any{
 					&U8Value{Value: 0x42},
 					&U16Value{Value: 0x4243},
@@ -296,7 +294,7 @@ func TestSerializer_Deserialize(t *testing.T) {
 	t.Run("u8, multi<u8, u16, u32>", func(t *testing.T) {
 		outputValues := []any{
 			&U8Value{},
-			&OutputMultiValue{
+			&MultiValue{
 				Items: []any{
 					&U8Value{},
 					&U16Value{},
@@ -310,7 +308,7 @@ func TestSerializer_Deserialize(t *testing.T) {
 		require.Nil(t, err)
 		require.Equal(t, []any{
 			&U8Value{Value: 0x42},
-			&OutputMultiValue{
+			&MultiValue{
 				Items: []any{
 					&U8Value{Value: 0x42},
 					&U16Value{Value: 0x4243},
@@ -321,7 +319,7 @@ func TestSerializer_Deserialize(t *testing.T) {
 	})
 
 	t.Run("variadic, should err because of nil item creator", func(t *testing.T) {
-		destination := &OutputVariadicValues{
+		destination := &VariadicValues{
 			Items: []any{},
 		}
 
@@ -330,7 +328,7 @@ func TestSerializer_Deserialize(t *testing.T) {
 	})
 
 	t.Run("empty: u8", func(t *testing.T) {
-		destination := &OutputVariadicValues{
+		destination := &VariadicValues{
 			Items:       []any{},
 			ItemCreator: func() any { return &U8Value{} },
 		}
@@ -341,7 +339,7 @@ func TestSerializer_Deserialize(t *testing.T) {
 	})
 
 	t.Run("variadic<u8>", func(t *testing.T) {
-		destination := &OutputVariadicValues{
+		destination := &VariadicValues{
 			Items:       []any{},
 			ItemCreator: func() any { return &U8Value{} },
 		}
@@ -357,7 +355,7 @@ func TestSerializer_Deserialize(t *testing.T) {
 	})
 
 	t.Run("varidic<u8>, with empty items", func(t *testing.T) {
-		destination := &OutputVariadicValues{
+		destination := &VariadicValues{
 			Items:       []any{},
 			ItemCreator: func() any { return &U8Value{} },
 		}
@@ -374,7 +372,7 @@ func TestSerializer_Deserialize(t *testing.T) {
 	})
 
 	t.Run("varidic<u32>", func(t *testing.T) {
-		destination := &OutputVariadicValues{
+		destination := &VariadicValues{
 			Items:       []any{},
 			ItemCreator: func() any { return &U32Value{} },
 		}
@@ -389,7 +387,7 @@ func TestSerializer_Deserialize(t *testing.T) {
 	})
 
 	t.Run("varidic<u8>, should err because decoded value is too large", func(t *testing.T) {
-		destination := &OutputVariadicValues{
+		destination := &VariadicValues{
 			Items:       []any{},
 			ItemCreator: func() any { return &U8Value{} },
 		}
@@ -402,7 +400,6 @@ func TestSerializer_Deserialize(t *testing.T) {
 func TestSerializer_InRealWorldScenarios(t *testing.T) {
 	serializer, err := NewSerializer(ArgsNewSerializer{
 		PartsSeparator: "@",
-		PubKeyLength:   32,
 	})
 	require.NoError(t, err)
 
@@ -414,54 +411,54 @@ func TestSerializer_InRealWorldScenarios(t *testing.T) {
 	oneQuintillion := big.NewInt(0).SetUint64(1_000_000_000_000_000_000)
 
 	t.Run("real-world (1): serialize input of multisig.proposeBatch(variadic<Action>), ", func(t *testing.T) {
-		createEsdtTokenPayment := func(tokenIdentifier string, tokenNonce uint64, amount *big.Int) StructValue {
-			return StructValue{
+		createEsdtTokenPayment := func(tokenIdentifier string, tokenNonce uint64, amount *big.Int) *StructValue {
+			return &StructValue{
 				Fields: []Field{
 					{
 						Name:  "token_identifier",
-						Value: StringValue{Value: tokenIdentifier},
+						Value: &StringValue{Value: tokenIdentifier},
 					},
 					{
 						Name:  "token_nonce",
-						Value: U64Value{Value: tokenNonce},
+						Value: &U64Value{Value: tokenNonce},
 					},
 					{
 						Name:  "amount",
-						Value: BigUIntValue{Value: amount},
+						Value: &BigUIntValue{Value: amount},
 					},
 				},
 			}
 		}
 
 		// First action: SendTransferExecuteEgld
-		firstAction := EnumValue{
+		firstAction := &EnumValue{
 			Discriminant: 5,
 			// CallActionData
 			Fields: []Field{
 				{
 					Name:  "to",
-					Value: AddressValue{Value: alicePubKey},
+					Value: &AddressValue{Value: alicePubKey},
 				},
 				{
 					Name:  "egld_amount",
-					Value: BigUIntValue{Value: oneQuintillion},
+					Value: &BigUIntValue{Value: oneQuintillion},
 				},
 				{
 					Name: "opt_gas_limit",
-					Value: OptionValue{
-						Value: U64Value{Value: 15000000},
+					Value: &OptionValue{
+						Value: &U64Value{Value: 15000000},
 					},
 				},
 				{
 					Name:  "endpoint_name",
-					Value: BytesValue{Value: []byte("example")},
+					Value: &BytesValue{Value: []byte("example")},
 				},
 				{
 					Name: "arguments",
-					Value: InputListValue{
-						Items: []any{
-							BytesValue{Value: []byte{0x03, 0x42}},
-							BytesValue{Value: []byte{0x07, 0x43}},
+					Value: &ListValue{
+						Items: []SingleValue{
+							&BytesValue{Value: []byte{0x03, 0x42}},
+							&BytesValue{Value: []byte{0x07, 0x43}},
 						},
 					},
 				},
@@ -469,18 +466,18 @@ func TestSerializer_InRealWorldScenarios(t *testing.T) {
 		}
 
 		// Second action: SendTransferExecuteEsdt
-		secondAction := EnumValue{
+		secondAction := &EnumValue{
 			Discriminant: 6,
 			// EsdtTransferExecuteData
 			Fields: []Field{
 				{
 					Name:  "to",
-					Value: AddressValue{Value: alicePubKey},
+					Value: &AddressValue{Value: alicePubKey},
 				},
 				{
 					Name: "tokens",
-					Value: InputListValue{
-						Items: []any{
+					Value: &ListValue{
+						Items: []SingleValue{
 							createEsdtTokenPayment("beer", 0, oneQuintillion),
 							createEsdtTokenPayment("chocolate", 0, oneQuintillion),
 						},
@@ -488,20 +485,20 @@ func TestSerializer_InRealWorldScenarios(t *testing.T) {
 				},
 				{
 					Name: "opt_gas_limit",
-					Value: OptionValue{
-						Value: U64Value{Value: 15000000},
+					Value: &OptionValue{
+						Value: &U64Value{Value: 15000000},
 					},
 				},
 				{
 					Name:  "endpoint_name",
-					Value: BytesValue{Value: []byte("example")},
+					Value: &BytesValue{Value: []byte("example")},
 				},
 				{
 					Name: "arguments",
-					Value: InputListValue{
-						Items: []any{
-							BytesValue{Value: []byte{0x03, 0x42}},
-							BytesValue{Value: []byte{0x07, 0x43}},
+					Value: &ListValue{
+						Items: []SingleValue{
+							&BytesValue{Value: []byte{0x03, 0x42}},
+							&BytesValue{Value: []byte{0x07, 0x43}},
 						},
 					},
 				},
@@ -538,15 +535,15 @@ func TestSerializer_InRealWorldScenarios(t *testing.T) {
 		// Drop the delimiters (were added for readability)
 		data := strings.Replace(dataHex, "|", "", -1)
 
-		actionId := U32Value{}
-		groupId := U32Value{}
+		actionId := &U32Value{}
+		groupId := &U32Value{}
 
-		actionTo := AddressValue{}
-		actionEgldAmount := BigUIntValue{}
-		actionGasLimit := U64Value{}
-		actionEndpointName := BytesValue{}
-		actionArguments := OutputListValue{
-			ItemCreator: func() any {
+		actionTo := &AddressValue{}
+		actionEgldAmount := &BigUIntValue{}
+		actionGasLimit := &U64Value{}
+		actionEndpointName := &BytesValue{}
+		actionArguments := &ListValue{
+			ItemCreator: func() SingleValue {
 				return &BytesValue{}
 			},
 		}
@@ -584,31 +581,31 @@ func TestSerializer_InRealWorldScenarios(t *testing.T) {
 			},
 		}
 
-		signers := OutputListValue{
-			ItemCreator: func() any {
+		signers := &ListValue{
+			ItemCreator: func() SingleValue {
 				return &AddressValue{}
 			},
 		}
 
-		destination := &OutputVariadicValues{
+		destination := &VariadicValues{
 			ItemCreator: func() any {
 				return &StructValue{
 					Fields: []Field{
 						{
 							Name:  "action_id",
-							Value: &actionId,
+							Value: actionId,
 						},
 						{
 							Name:  "group_id",
-							Value: &groupId,
+							Value: groupId,
 						},
 						{
 							Name:  "action_data",
-							Value: &action,
+							Value: action,
 						},
 						{
 							Name:  "signers",
-							Value: &signers,
+							Value: signers,
 						},
 					},
 				}
