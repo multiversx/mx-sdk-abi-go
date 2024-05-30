@@ -6,37 +6,50 @@ import (
 	"io"
 )
 
-type codecForList struct {
-	generalCodec generalCodec
+// ListValue is a list of values
+type ListValue struct {
+	Items       []SingleValue
+	ItemCreator func() SingleValue
 }
 
-func (c *codecForList) encodeNested(writer io.Writer, value InputListValue) error {
+// EncodeNested encodes the value in the nested form
+func (value *ListValue) EncodeNested(writer io.Writer) error {
 	err := encodeLength(writer, uint32(len(value.Items)))
 	if err != nil {
 		return err
 	}
 
-	return c.encodeItems(writer, value)
+	return value.encodeItems(writer)
 }
 
-func (c *codecForList) encodeTopLevel(writer io.Writer, value InputListValue) error {
-	return c.encodeItems(writer, value)
+// EncodeTopLevel encodes the value in the top-level form
+func (value *ListValue) EncodeTopLevel(writer io.Writer) error {
+	return value.encodeItems(writer)
 }
 
-func (c *codecForList) decodeNested(reader io.Reader, value *OutputListValue) error {
-	if value.ItemCreator == nil {
-		return errors.New("cannot decode list: item creator is nil")
+// DecodeNested decodes the value from the nested form
+func (value *ListValue) encodeItems(writer io.Writer) error {
+	for _, item := range value.Items {
+		err := item.EncodeNested(writer)
+		if err != nil {
+			return err
+		}
 	}
 
+	return nil
+}
+
+// DecodeNested decodes the value from the nested form
+func (value *ListValue) DecodeNested(reader io.Reader) error {
 	length, err := decodeLength(reader)
 	if err != nil {
 		return err
 	}
 
-	value.Items = make([]any, 0, length)
+	value.Items = make([]SingleValue, 0, length)
 
 	for i := uint32(0); i < length; i++ {
-		err := c.decodeItem(reader, value)
+		err := value.decodeItem(reader)
 		if err != nil {
 			return err
 		}
@@ -45,39 +58,29 @@ func (c *codecForList) decodeNested(reader io.Reader, value *OutputListValue) er
 	return nil
 }
 
-func (c *codecForList) decodeTopLevel(data []byte, value *OutputListValue) error {
+// DecodeTopLevel decodes the value from the top-level form
+func (value *ListValue) DecodeTopLevel(data []byte) error {
+	reader := bytes.NewReader(data)
+	value.Items = make([]SingleValue, 0)
+
+	for reader.Len() > 0 {
+		err := value.decodeItem(reader)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (value *ListValue) decodeItem(reader io.Reader) error {
 	if value.ItemCreator == nil {
 		return errors.New("cannot decode list: item creator is nil")
 	}
 
-	reader := bytes.NewReader(data)
-	value.Items = make([]any, 0)
-
-	for reader.Len() > 0 {
-		err := c.decodeItem(reader, value)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (c *codecForList) encodeItems(writer io.Writer, value InputListValue) error {
-	for _, item := range value.Items {
-		err := c.generalCodec.doEncodeNested(writer, item)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (c *codecForList) decodeItem(reader io.Reader, value *OutputListValue) error {
 	newItem := value.ItemCreator()
 
-	err := c.generalCodec.doDecodeNested(reader, newItem)
+	err := newItem.DecodeNested(reader)
 	if err != nil {
 		return err
 	}
