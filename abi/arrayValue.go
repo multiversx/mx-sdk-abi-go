@@ -8,7 +8,7 @@ import (
 
 // ArrayValue is an array of values
 type ArrayValue struct {
-	Size        uint32
+	Length      uint32
 	Items       []SingleValue
 	ItemCreator func() SingleValue
 }
@@ -36,9 +36,9 @@ func (value *ArrayValue) encodeItems(writer io.Writer) error {
 
 // DecodeNested decodes the value from the nested form
 func (value *ArrayValue) DecodeNested(reader io.Reader) error {
-	value.Items = make([]SingleValue, 0, value.Size)
+	value.Items = make([]SingleValue, 0, value.Length)
 
-	for i := uint32(0); i < value.Size; i++ {
+	for i := uint32(0); i < value.Length; i++ {
 		err := value.decodeItem(reader)
 		if err != nil {
 			return err

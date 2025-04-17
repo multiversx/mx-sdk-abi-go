@@ -13,7 +13,7 @@ func TestArrayValue(t *testing.T) {
 	t.Run("should encode nested", func(t *testing.T) {
 		testEncodeNested(t, codec,
 			&ArrayValue{
-				Size: 3,
+				Length: 3,
 				Items: []SingleValue{
 					&U16Value{Value: 1},
 					&U16Value{Value: 2},
@@ -27,7 +27,7 @@ func TestArrayValue(t *testing.T) {
 	t.Run("should encode top-level", func(t *testing.T) {
 		testEncodeTopLevel(t, codec,
 			&ArrayValue{
-				Size: 3,
+				Length: 3,
 				Items: []SingleValue{
 					&U16Value{Value: 1},
 					&U16Value{Value: 2},
@@ -42,7 +42,7 @@ func TestArrayValue(t *testing.T) {
 		data, _ := hex.DecodeString("000100020003")
 
 		destination := &ArrayValue{
-			Size:        3,
+			Length:      3,
 			ItemCreator: func() SingleValue { return &U16Value{} },
 			Items:       []SingleValue{},
 		}
@@ -63,7 +63,7 @@ func TestArrayValue(t *testing.T) {
 		data, _ := hex.DecodeString("000100020003")
 
 		destination := &ArrayValue{
-			Size:        3,
+			Length:      3,
 			ItemCreator: func() SingleValue { return &U16Value{} },
 			Items:       []SingleValue{},
 		}
