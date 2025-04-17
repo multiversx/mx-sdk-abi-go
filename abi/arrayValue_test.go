@@ -79,4 +79,16 @@ func TestArrayValue(t *testing.T) {
 			destination.Items,
 		)
 	})
+
+	t.Run("item creator is nil, should error", func(t *testing.T) {
+		data, _ := hex.DecodeString("000100020003")
+
+		destination := &ArrayValue{
+			Length: 3,
+			Items:  []SingleValue{},
+		}
+
+		err := codec.DecodeTopLevel(data, destination)
+		require.ErrorContains(t, err, "item creator is nil")
+	})
 }
