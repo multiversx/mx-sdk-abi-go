@@ -35,15 +35,15 @@ func NewSerializer(args ArgsNewSerializer) (*serializer, error) {
 
 // Serialize serializes the given input values into a string
 func (s *serializer) Serialize(inputValues []any) (string, error) {
-	parts, err := s.serializeToParts(inputValues)
+	parts, err := s.SerializeToParts(inputValues)
 	if err != nil {
 		return "", err
 	}
 
-	return s.encodeParts(parts), nil
+	return s.EncodeParts(parts), nil
 }
 
-func (s *serializer) serializeToParts(inputValues []any) ([][]byte, error) {
+func (s *serializer) SerializeToParts(inputValues []any) ([][]byte, error) {
 	partsHolder := newEmptyPartsHolder()
 
 	err := s.doSerialize(partsHolder, inputValues)
@@ -99,15 +99,15 @@ func (s *serializer) doSerialize(partsHolder *partsHolder, inputValues []any) er
 
 // Deserialize deserializes the given data into the output values
 func (s *serializer) Deserialize(data string, outputValues []any) error {
-	parts, err := s.decodeIntoParts(data)
+	parts, err := s.DecodeIntoParts(data)
 	if err != nil {
 		return err
 	}
 
-	return s.deserializeParts(parts, outputValues)
+	return s.DeserializeParts(parts, outputValues)
 }
 
-func (s *serializer) deserializeParts(parts [][]byte, outputValues []any) error {
+func (s *serializer) DeserializeParts(parts [][]byte, outputValues []any) error {
 	partsHolder := newPartsHolder(parts)
 
 	err := s.doDeserialize(partsHolder, outputValues)
@@ -209,7 +209,7 @@ func (s *serializer) deserializeSingleValue(partsHolder *partsHolder, value Sing
 	return nil
 }
 
-func (s *serializer) encodeParts(parts [][]byte) string {
+func (s *serializer) EncodeParts(parts [][]byte) string {
 	partsHex := make([]string, len(parts))
 
 	for i, part := range parts {
@@ -219,7 +219,7 @@ func (s *serializer) encodeParts(parts [][]byte) string {
 	return strings.Join(partsHex, s.partsSeparator)
 }
 
-func (s *serializer) decodeIntoParts(encoded string) ([][]byte, error) {
+func (s *serializer) DecodeIntoParts(encoded string) ([][]byte, error) {
 	partsHex := strings.Split(encoded, s.partsSeparator)
 	parts := make([][]byte, len(partsHex))
 
